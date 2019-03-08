@@ -1,5 +1,5 @@
 # coding=utf8
-# author=yu
+
 
 from __future__ import print_function, division
 import os
@@ -42,7 +42,7 @@ class ProteinDataset(Dataset):
         properties = self.properties_frame.ix[idx,:].as_matrix().astype('double')
         label = self.labels[idx]
 
-        # properties.resize((WIDTH, HEIGHT))
+        properties.resize((WIDTH, HEIGHT))
         sample = (properties, label)
 
         if self.transform:
@@ -58,8 +58,8 @@ class ToTensor(object):
         # convert np.ndarray to tensor
         properties = torch.from_numpy(properties)
         # insert depth
-        properties = properties.float()#.view(1, WIDTH, HEIGHT)
-
+        properties = properties.float().view(1, WIDTH, HEIGHT)
+        # properties = properties.float().view(1, HEIGHT, WIDTH)
         return properties, label
 
 # Split data for training and testing randomly
@@ -80,7 +80,7 @@ def randomSplit(csv_file, pos_size, neg_size, pick_rate):
     test = pd.DataFrame(data = test)
     train = pd.DataFrame(data = train)
     lg("Train Shape = {}, Test Shape = {}".format(train.shape, test.shape))
-    lg("Test data No = {}".format(test_list))
+    lg("Test data No = {}\n".format(test_list))
     return train,test
 
 if __name__ == '__main__':

@@ -1,5 +1,1 @@
-# DNN
-dense neutral network
-
-
-hahahaha
+# CNN
