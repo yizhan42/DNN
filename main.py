@@ -91,7 +91,7 @@ def run(times=0, module = CNN):
             test_output, last_layer = cnn(test_x)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
             accuracy = sum(pred_y == test_y) / float(test_y.size(0))
-            lg('    Epoch: {:4d} | train loss: {:7.6f} | test accuracy: {:3.2f}'.format(epoch, loss.data[0], accuracy))
+            lg('    Epoch: {:4d} | train loss: {:7.6f} | test accuracy: {:3.2f}'.format(epoch, loss.data.item(), accuracy))
 
     # print predictions from test data
     lg('\nFinial Testing {}:'.format(times))
