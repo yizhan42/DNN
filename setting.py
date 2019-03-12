@@ -10,6 +10,8 @@ NEG_SIZE = 422
 POS_SIZE = 422
 PICK_RATE = 0.1
 
+
+#lalala
 LOGGED = False
 LOGGED = True
 RUN_TIMES = 20
