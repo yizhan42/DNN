@@ -108,7 +108,7 @@ def run(times=0, module = CNN):
     print(test_output)
     # for a,b in test_output:
     #     print(a+b)
-    # print(help(test_output))
+    # print0(help(test_output))
     # accuracy = sum(pred_y == test_y) / float(test_y.size(0))
     # print(test_output.requires_grad)#,torch.max(test_output, 1))
     # print("_:")
