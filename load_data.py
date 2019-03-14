@@ -27,7 +27,7 @@ class ProteinDataset(Dataset):
         self.properties_frame = pd_dataFrame
         # self.properties_frame = pd.read_csv(csv_file, header = None)
         # extract different part of data - name, label and properties
-        self.labels = self.properties_frame.ix[:,1].values().astype('int64')
+        self.labels = self.properties_frame.ix[:,1].values.astype('int64')
         self.labels[self.labels==-1] = 0 # modify -1 to 0
         self.protein_names = self.properties_frame.ix[:,0]
         self.properties_frame = self.properties_frame.ix[:,2:]
@@ -39,7 +39,7 @@ class ProteinDataset(Dataset):
     def __getitem__(self, idx):
         # convert pd.DataFrame to np.ndarray or other
         protein_name = self.protein_names.ix[idx,:]
-        properties = self.properties_frame.ix[idx,:].values().astype('double')
+        properties = self.properties_frame.ix[idx,:].values.astype('double')
         label = self.labels[idx]
 
         properties.resize((WIDTH, HEIGHT))
