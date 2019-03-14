@@ -91,7 +91,7 @@ def run(times=0, module = CNN):
             test_output, last_layer = cnn(test_x)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
             lg('sum = {:4d}\n'.format(sum(pred_y == test_y)))
-            lg('test size = {:4d}\n'.format(float(test_y.size(0))))
+            lg('test size = {:4f}\n'.format(float(test_y.size(0))))
             
             accuracy = sum(pred_y == test_y) / float(test_y.size(0))
             lg('accuracy = {:7.6f} \n'.format(accuracy))
