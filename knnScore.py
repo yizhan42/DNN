@@ -175,7 +175,7 @@ def getKnnScore(indices_list, total_number = 11906):
 
 
 def write_knnScore_tocsv():
-    with open('knnScore_data.csv','w') as f:
+    with open('data/knnScore_data.csv','w') as f:
         writer = csv.writer(f)
         for value in fea_result.values():
             writer.writerow(value)
