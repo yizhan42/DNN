@@ -8,9 +8,10 @@ import matplotlib.pyplot as plt
 from load_data import *
 from settings import *
 
-import matplotlib.pyplot as plt
+
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
+
 # Module
 class CNN(nn.Module):
     def __init__(self):
@@ -67,7 +68,10 @@ def run(times=0, module = CNN):
 
     # Bundle propertes and labels of test-data separately
     test_x = [test_data[i][0] for i in range(len(test_data))]
+    print(test_x)
     test_x = Variable(torch.unsqueeze(torch.Tensor(test_x), dim=1))
+    print("***")
+    print(test_x)
     test_y = torch.from_numpy(test_data.labels)
 
     cnn = CNN()
@@ -90,11 +94,11 @@ def run(times=0, module = CNN):
         if epoch % 50 == 0:
             test_output, last_layer = cnn(test_x)
             pred_y = torch.max(test_output, 1)[1].data.squeeze()
-            lg('sum = {:4d}\n'.format(sum(pred_y == test_y)))
-            lg('test size = {:4f}\n'.format(float(test_y.size(0))))
+            # lg('sum = {:4d}\n'.format(sum(pred_y == test_y)))
+            # lg('test size = {:4f}\n'.format(float(test_y.size(0))))
             
-            accuracy = sum(pred_y == test_y) / float(test_y.size(0))
-            lg('accuracy = {:7.6f} \n'.format(accuracy))
+            accuracy = float(sum(pred_y == test_y)) / float(test_y.size(0))
+            # lg('accuracy = {:7.6f} \n'.format(accuracy))
             lg('    Epoch: {:4d} | train loss: {:7.6f} | test accuracy: {:3.2f}'.format(epoch, loss.data.item(), accuracy))
 
     # print predictions from test data

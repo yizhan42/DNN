@@ -11,6 +11,10 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms, utils
 import random
+
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+
 from settings import *
 
 # Load Data with testing and training data randomly splited.
@@ -82,6 +86,25 @@ def randomSplit(csv_file, pos_size, neg_size, pick_rate):
     lg("Train Shape = {}, Test Shape = {}".format(train.shape, test.shape))
     lg("Test data No = {}\n".format(test_list))
     return train,test
+
+
+# split train and test
+def splitData(X, y):
+    # X = array([[0,1],[2,3],[4,5]]), X_train = array([[0,1],[2,3]])
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=1)
+    # X_train, X_val, y_train, y_val = train_test_split(X_train, y_train, test_size=0.1, random_state=1)
+    return X_train, X_test, y_train, y_test
+
+# split train data to 10 fold cross validation
+def kfold(X, y):
+    kf = KFold(n_splits=10, shuffle=True)
+    # kf.get_n_splits(X)
+    for train_index, val_index in kf.split(X):
+        print("TRAIN:", train_index, "TEST:", val_index)
+        X_train, X_val = X[train_index], X[val_index]
+        y_train, y_val = y[train_index], y[val_index]
+    return X_train, X_val, y_train, y_val
+
 
 if __name__ == '__main__':
     # # load_data(CSV_FILE)

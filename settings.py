@@ -1,11 +1,13 @@
 # coding=utf8
 
+import argparse
 import datetime
 
 # Data Parameters
 # TRAIN_CSV_FILE = '../data/train.csv'
 # TEST_CSV_FILE = '../data/test.csv'
-CSV_FILE = 'data/origin.csv'
+# CSV_FILE = 'data/origin.csv'
+CSV_FILE = 'origin_all_data.csv'
 NEG_SIZE = 422
 POS_SIZE = 422
 PICK_RATE = 0.1
@@ -56,6 +58,15 @@ Class_N = 2
 IS_WRITABLE = True
 IS_PRINTABLE = True
 
+
+
+parser = argparse.ArgumentParser(description='Predict Ubiquitination with CNN')
+# device
+device = parser.add_argument_group('Device options')
+device.add_argument('--num-workers', default=0, type=int, help='Number of workers used in data-loading')
+device.add_argument('--cuda', default=False, action='store_true', help='enable the gpu' )
+
+
 if(LOGGED):
     log = open(LOG_FILE, 'w')
     
@@ -65,4 +76,4 @@ def lg(string, p = IS_PRINTABLE, w = IS_WRITABLE):
     if LOGGED and w:
         log.write(string + "\n")
 
-lg("Data scv file: {}\n".format(CSV_FILE))
+lg("Data csv file: {}\n".format(CSV_FILE))
