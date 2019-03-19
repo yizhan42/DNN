@@ -117,6 +117,7 @@ def getDist(FILE):
         nbrs = NearestNeighbors(n_neighbors=29, algorithm='ball_tree').fit(X) # 29 means threshold
         distances, indices_list = nbrs.kneighbors(X)
         getKnnScore(indices_list, total_number=11906)
+        write_knnScore_tocsv()
 
     # # print(fea_label)
     # return distances, indices
