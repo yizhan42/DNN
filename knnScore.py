@@ -91,16 +91,11 @@ def getBreakPoint():
     fea_breakpoint['GO'][1] = fea_breakpoint['IPR'][0]
     print(fea_breakpoint)
     return fea_breakpoint
-        
-
-
-
-
 
 
 # 求距离矩阵
 def getDist(FILE):
-    df = pd.read_csv(FILE, sep=',')
+    df = pd.read_csv(FILE, sep=',') # CSV文件存到硬盘上，关机后仍然在，此步骤读到内存中，关机后不在
     Y = np.array(df.values[:,0:2]) # Y means ID and label
     for i in range(len(Y)):
         fea_result[Y[i][0]] = [Y[i][0], Y[i][1]] # in dict fea_label, key means ID, value means [id, label, score ...]
@@ -116,19 +111,20 @@ def getDist(FILE):
 
         nbrs = NearestNeighbors(n_neighbors=29, algorithm='ball_tree').fit(X) # 29 means threshold
         distances, indices_list = nbrs.kneighbors(X)
-        getKnnScore(indices_list, total_number=11906)
+        getKnnScore(indices_list, Y, total_number=11906)
         write_knnScore_tocsv()
+    return Y
 
     # # print(fea_label)
     # return distances, indices
 
 # 求KNN-score矩阵，返回训练样本。先把数据存为dataFrame格式，然后pd.to_csv()将训练样本保存为csv格式
 
-def getKnnScore(indices_list, total_number = 11906):
+def getKnnScore(indices_list, Y, total_number = 11906):
     # indices_list 是某个feature 下所有的nn index
     # knnScores = {} # protein id - knn score list
     for indices in indices_list:
-        protein_id = indices[0]
+        protein_id = Y[indices][0]
         # knnScores[protein_id] = []
         end = int(total_number * 29 / 100) + 1
         gap = total_number/100
@@ -137,8 +133,10 @@ def getKnnScore(indices_list, total_number = 11906):
         # threshold_idx = 0
         same_label = 0
         for idx in range(1,end):
-            another_proteind_id = indices[idx]
-            if fea_result[protein_id][1] == fea_result[another_proteind_id][1]:
+            another_protein_id = Y[idx][0]
+            # print(fea_result)
+            # print(fea_result[another_protein_id][1])
+            if fea_result[protein_id][1] == fea_result[another_protein_id][1]:
                 same_label += 1
             if idx == threshold:
                 fea_result[protein_id].append(same_label/idx)
@@ -184,6 +182,6 @@ def write_knnScore_tocsv():
 if __name__ == '__main__':
     # getData()
     # getDist('origin_all_data.csv')
-    getDist(CSV_FILE)
-    # getKnnScore()
+    Y = getDist(CSV_FILE)
+    getKnnScore([[1,3,5,7,9]],Y)
     # getBreakPoint()
