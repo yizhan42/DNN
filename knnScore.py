@@ -92,28 +92,59 @@ def getBreakPoint():
     print(fea_breakpoint)
     return fea_breakpoint
 
+# 胖胖教我找bug
+# def getLineNum(file):
+#     df = pd.read_csv(file, header = 1, sep = ',')
+#     Y = np.array(df.values[:,:])
+#     print(len(Y))
+#     print(Y)
+#     print("***")
+#     print(df)
 
+def sort_protein(X):
+    
+    protein_len = len(X)
+    indices_list = [[i for i in range(protein_len)] for _ in range(protein_len)]
+    for i in range(protein_len):
+        score_list = []
+        for j in range(protein_len):        
+            intersection_set = sum(np.logical_and(X[i],X[j]))
+            union_set = sum(np.logical_or(X[i],X[j]))
+            # print("i = ",i, "j = ", j ,"intersection_set:",intersection_set)
+            # print("i = ", i ,"j = ", j ,"union_set:",union_set)
+            distance = 1 - intersection_set / union_set if union_set != 0 else 0.0001
+            score_list.append(distance)
+            # print("distance:", distance)
+        indices_list[i].sort(key=lambda index: score_list[index])
+        # print(indices_list)
+    return indices_list
+    # intersection_set 交集
+    # union_set 并集
+    
 # 求距离矩阵
-def getDist(FILE):
-    df = pd.read_csv(FILE, sep=',') # CSV文件存到硬盘上，关机后仍然在，此步骤读到内存中，关机后不在
+def main(FILE):
+    df = pd.read_csv(FILE, header = None, sep=',') # CSV文件存到硬盘上，关机后仍然在，此步骤读到内存中，关机后不在
     Y = np.array(df.values[:,0:2]) # Y means ID and label
-    for i in range(len(Y)):
+    X = np.array(df.values[:,2:])
+    protein_len = len(X)
+    for i in range(protein_len):
         fea_result[Y[i][0]] = [Y[i][0], Y[i][1]] # in dict fea_label, key means ID, value means [id, label, score ...]
         
-
     fea_breakpoint = {'GO': [2, 10068], 'IPR': [10068, 19110], 'PF': [19110, 23196], 'PR': [23196, 23897], 'PS': [23897, 25579], 'SM': [25579, 26374], 'SSF': [26374, 27340]}
+    
     for feature, break_point in fea_breakpoint.items():
-        X = np.array(df.values[:,break_point[0]:break_point[1]])
-        print(len(X))
+        Z = np.array(df.values[:,break_point[0]:break_point[1]])
+        print("feature:",feature, protein_len)
         # if torch.cuda.is_available():
         #     print('cuda is available \n')
         #     X = X.cuda()
 
-        nbrs = NearestNeighbors(n_neighbors=29, algorithm='ball_tree').fit(X) # 29 means threshold
-        distances, indices_list = nbrs.kneighbors(X)
-        getKnnScore(indices_list, Y, total_number=11906)
+        # nbrs = NearestNeighbors(n_neighbors=int(len(X) * 29 / 100 + 1), algorithm='ball_tree').fit(X) # 29 means threshold
+        # distances, indices_list = nbrs.kneighbors(X)
+        indices_list = sort_protein(X)   
+        getKnnScore(indices_list, Y, total_number=protein_len)
         write_knnScore_tocsv()
-    return Y
+    # return Y
 
     # # print(fea_label)
     # return distances, indices
@@ -123,17 +154,23 @@ def getDist(FILE):
 def getKnnScore(indices_list, Y, total_number = 11906):
     # indices_list 是某个feature 下所有的nn index
     # knnScores = {} # protein id - knn score list
-    for indices in indices_list:
-        protein_id = Y[indices][0]
+    # print(indices_list)
+    for i,indices in enumerate(indices_list):
+        protein_id = Y[i][0]
         # knnScores[protein_id] = []
         end = int(total_number * 29 / 100) + 1
-        gap = total_number/100
+        gap = int(total_number/100)
+        gap = 1 if gap <= 0 else gap
         threshold = 5*gap
         # thresholds = [int(i * total_number/100) for i in range(5,30)]
         # threshold_idx = 0
         same_label = 0
+        # print("end:",end, "gap:",gap)
+        # print("protein_id:", protein_id)
+        # print("indices:",indices)
         for idx in range(1,end):
-            another_protein_id = Y[idx][0]
+            another_protein_id = Y[indices[idx]][0]
+            # print("another_protein_id:", another_protein_id)
             # print(fea_result)
             # print(fea_result[another_protein_id][1])
             if fea_result[protein_id][1] == fea_result[another_protein_id][1]:
@@ -182,6 +219,8 @@ def write_knnScore_tocsv():
 if __name__ == '__main__':
     # getData()
     # getDist('origin_all_data.csv')
-    Y = getDist(CSV_FILE)
-    getKnnScore([[1,3,5,7,9]],Y)
+    # Y = getDist('short_pos_test.csv')
+    # getKnnScore([[1,3,5,7,9]],Y)
     # getBreakPoint()
+    # getLineNum('test.csv')
+    main('origin_all_data.csv')
