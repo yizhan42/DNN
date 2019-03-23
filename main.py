@@ -7,74 +7,110 @@ import matplotlib.pyplot as plt
 
 from load_data import *
 from settings import *
+from CNNnd import *
+from CNNst import *
 
+from train import *
+from test_final import * 
 
 from sklearn.metrics import roc_curve, auc
 from scipy import interp
 
-# Module
-class CNN(nn.Module):
-    def __init__(self):
-        super(CNN, self).__init__()
-        self.conv1 = nn.Sequential(         # input shape (1, 14, 14)
-            nn.Conv2d(
-                in_channels=CNN_P[0][0],              # input height
-                out_channels=CNN_P[0][1],             # n_filters
-                kernel_size=CNN_P[0][2],              # filter size
-                stride=CNN_P[0][3],                   # filter movement/step
-                padding=CNN_P[0][4],                  # if want same width and length of this image after con2d, padding=(kernel_size-1)/2 if stride=1
-            ),                              # output shape (16, 14, 14)
-            nn.ReLU(),                      # activation
-            nn.MaxPool2d(kernel_size=CNN_P[0][5]),    # choose max value in 2x2 area, output shape (16, 14, 14)
-        )
-        # self.conv2 = nn.Sequential(         # input shape (1, 14, 14)
-        #     nn.Conv2d(CNN_P[1][0], CNN_P[1][1], CNN_P[1][2], CNN_P[1][3], CNN_P[1][4]),     # output shape (32, 7, 7)
-        #     nn.ReLU(),                      # activation
-        #     nn.MaxPool2d(CNN_P[1][5]),                # output shape (32, 7, 7)
-        # )
-        self.conv2 = nn.Sequential(         # input shape (1, 14, 14)
-            nn.Conv2d(CNN_P[1][0], CNN_P[1][1], CNN_P[1][2], CNN_P[1][3], CNN_P[1][4]),     # output shape (32, 7, 7)
-            nn.ReLU(),                      # activation
-            nn.MaxPool2d(CNN_P[1][5]),                # output shape (32, 7, 7)
-        )
-        # self.out1 = nn.Linear(RS_Size, Class_N, True)   # fully connected layer, output 2 classes
-        self.out1 = nn.Linear(RS_Size, 2, True)
-        # self.out2 = nn.Softmax()
-        self.out2 = nn.Softmax()
+def main(args):
+    # Run for each Cross Validation data
+    save_folder = args.save_folder
+    val_loss_folder = args.val_loss_folder
+    val_accuracy_folder = args.val_accuracy_folder
+    
+    for i in range(args.start, args.end):
 
-    def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
-        x = x.view(x.size(0), -1)           # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
-        output = self.out1(x)
-        output = self.out2(output)
-        return output, x    # return x for visualization
+        if (args.start != args.end):
+            args.save_folder = '{}/group_{}/'.format(save_folder, i)
+            if not os.path.exists(args.save_folder):
+                os.makedirs(args.save_folder)
+        print(args.save_folder)
+        print('Loading data...')
+        train_dataset, validation_dataset = readTrainingData(
+            label_data_path='{}{}'.format(
+                args.train_data_folder, args.prefix_filename),
+            index=i,
+            total=args.groups,
+            # standard_length=args.length,
+        )
+        test_dataset = readTestData(
+            label_data_path='{}{}'.format(
+                args.test_data_folder, args.prefix_filename),
+            index=i,
+            total=args.groups,
+        )
+        model = CNN_multihot()
+        run(args, train_dataset, validation_dataset, test_dataset, model, i)
 
-def run(times=0, module = CNN):
+        if (args.start != args.end):
+            args.val_loss_folder = '{}/loss_{}/'.format(val_loss_folder, i)
+            if not os.path.exists(args.val_loss_folder):
+                os.makedirs(args.val_loss_folder)
+
+        if (args.start != args.end):
+            args.val_accuracy_folder = '{}/accuracy_{}/'.format(
+                val_accuracy_folder, i)
+            if not os.path.exists(args.val_accuracy_folder):
+                os.makedirs(args.val_accuracy_folder)
+
+        plt_loss(args, train_loss_list[-100:], val_loss_list[-100:])
+        drawAccuracy(
+            args, train_accuracy_list[-100:], val_accuracy_list[-100:])
+
+
+def run(args, train_dataset, validation_dataset, test_dataset, model, index):
+    train(model, train_dataset, validation_dataset, args)
+    test_final(model, test_dataset, args, index)
+
+
+if __name__ == '__main__':
+    # parse arguments
+    args = parser.parse_args()
+    main(args)
+
+def temp(module, args, times=0):
     lg("-------- {} time(s) CNN module start --------".format(times))
     # torch.manual_seed(1)    # reproducible
 
     train, test = randomSplit(csv_file = CSV_FILE, pos_size=POS_SIZE, neg_size=NEG_SIZE, pick_rate=PICK_RATE)
 
-    train_data = ProteinDataset(
-        pd_dataFrame = train,
-        transform = ToTensor()
+    # train_data = ProteinDataset(
+    #     pd_dataFrame = train,
+    #     transform = ToTensor()
+    # )
+    # test_data = ProteinDataset(
+    #     pd_dataFrame = test,
+    # )
+
+    train_dataset, validation_dataset = readTrainingData(
+        label_data_path='{}{}'.format(
+            args.train_data_folder, args.prefix_filename),
+        index=i,
+        total=args.groups,
+        # standard_length=args.length,
     )
-    test_data = ProteinDataset(
-        pd_dataFrame = test,
+    test_dataset = readTestData(
+        label_data_path='{}{}'.format(
+            args.test_data_folder, args.prefix_filename),
+        index=i,
+        total=args.groups,
     )
     # Data Loader for easy mini-batch return in training, the Matrix batch shape will be (50, 1, 14, 14)
-    train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = Data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     # Bundle propertes and labels of test-data separately
-    test_x = [test_data[i][0] for i in range(len(test_data))]
+    test_x = [test_dataset[i][0] for i in range(len(test_dataset))]
     print(test_x)
     test_x = Variable(torch.unsqueeze(torch.Tensor(test_x), dim=1))
     print("***")
     print(test_x)
-    test_y = torch.from_numpy(test_data.labels)
+    test_y = torch.from_numpy(test_dataset.labels)
 
-    cnn = CNN()
+    cnn = module
 
     optimizer = torch.optim.Adam(cnn.parameters(), lr=LR)   # optimize all cnn parameters
     loss_func = nn.CrossEntropyLoss()                       # the target label is not one-hotted
@@ -108,7 +144,7 @@ def run(times=0, module = CNN):
     # score = torch.max(test_output, 1)[0].data.squeeze()
     preds = (torch.max(test_output, 1)[1].data.squeeze(), torch.min(test_output, 1)[1].data.squeeze())
     # print(test_data.labels,type(test_data.labels))
-    labels = (test_data.labels,[1-label for label in test_data.labels])
+    labels = (test_dataset.labels,[1-label for label in test_dataset.labels])
     # print(score)
     # print(labels)
     # print(test_y,type(test_y.numpy()))
@@ -161,9 +197,9 @@ def run(times=0, module = CNN):
     lg("\n-------- {} time(s) CNN module end --------\n\n".format(times))
     return (fpr,tpr,roc_auc)
 
-def bundle(times = 10):
+def bundle(module, times = 10):
     # plt.switch_backend('agg')
-    lg("\nModle:\n{}\n".format(CNN()))  # net architecture
+    lg("\nModle:\n{}\n".format(module))  # net architecture
 
     tprs = [[], []]
     aucs = [[], []]
@@ -231,4 +267,4 @@ def draw(fpr, tpr, roc_auc):
     # plt.show()
 
 if __name__ == "__main__":
-    bundle(RUN_TIMES)
+    bundle(CNN_knnscore, RUN_TIMES)

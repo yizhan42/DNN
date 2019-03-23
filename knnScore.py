@@ -69,7 +69,7 @@ fea_result = dict()
 # fea_label = {}
 
 
-# 求feature断点
+# 求 7 个feature断点，即要找出第几列到第几列是GO feature等。
 def getBreakPoint():
     with open('pos_test.csv','r') as csvfile:
         reader = csv.reader(csvfile)
@@ -92,7 +92,8 @@ def getBreakPoint():
     print(fea_breakpoint)
     return fea_breakpoint
 
-# 胖胖教我找bug
+# 胖胖教我找bug，判断为什么命令 cat 文件名 | wc -l 和在函数中print(len)中输入的行数差一行，getLineNum函数中的
+# file是写的一个测试csv，通过print出来看到是差在第一行，然后定位到是由于header参数，header = None时得到一直结果。
 # def getLineNum(file):
 #     df = pd.read_csv(file, header = 1, sep = ',')
 #     Y = np.array(df.values[:,:])
@@ -101,8 +102,8 @@ def getBreakPoint():
 #     print("***")
 #     print(df)
 
-def sort_protein(X):
-    
+# 对蛋白质进行排序
+def sort_protein(X):    
     protein_len = len(X)
     indices_list = [[i for i in range(protein_len)] for _ in range(protein_len)]
     for i in range(protein_len):
@@ -124,40 +125,32 @@ def sort_protein(X):
 # 求距离矩阵
 def main(FILE):
     df = pd.read_csv(FILE, header = None, sep=',') # CSV文件存到硬盘上，关机后仍然在，此步骤读到内存中，关机后不在
-    Y = np.array(df.values[:,0:2]) # Y means ID and label
-    X = np.array(df.values[:,2:])
-    protein_len = len(X)
+    # Y = np.array(df.values[:,0:2]) # Y means ID and label
+    # X = np.array(df.values[:,2:])
+    protein_len = len(df)
     for i in range(protein_len):
-        fea_result[Y[i][0]] = [Y[i][0], Y[i][1]] # in dict fea_label, key means ID, value means [id, label, score ...]
+        fea_result[df[i][0]] = [df[i][0], df[i][1]] # in dict fea_label, key means ID, value means [id, label, score ...]
         
     fea_breakpoint = {'GO': [2, 10068], 'IPR': [10068, 19110], 'PF': [19110, 23196], 'PR': [23196, 23897], 'PS': [23897, 25579], 'SM': [25579, 26374], 'SSF': [26374, 27340]}
     
     for feature, break_point in fea_breakpoint.items():
-        Z = np.array(df.values[:,break_point[0]:break_point[1]])
+        X = np.array(df.values[:,break_point[0]:break_point[1]])
         print("feature:",feature, protein_len)
-        # if torch.cuda.is_available():
-        #     print('cuda is available \n')
-        #     X = X.cuda()
-
         # nbrs = NearestNeighbors(n_neighbors=int(len(X) * 29 / 100 + 1), algorithm='ball_tree').fit(X) # 29 means threshold
         # distances, indices_list = nbrs.kneighbors(X)
         indices_list = sort_protein(X)   
-        getKnnScore(indices_list, Y, total_number=protein_len)
-        write_knnScore_tocsv()
+        getKnnScore(indices_list, df, total_number=protein_len)
+    write_knnScore_tocsv()
     # return Y
 
     # # print(fea_label)
     # return distances, indices
 
-# 求KNN-score矩阵，返回训练样本。先把数据存为dataFrame格式，然后pd.to_csv()将训练样本保存为csv格式
-
-def getKnnScore(indices_list, Y, total_number = 11906):
+# 求KNN-score矩阵 fea_result
+def getKnnScore(indices_list, df, total_number = 11906):
     # indices_list 是某个feature 下所有的nn index
-    # knnScores = {} # protein id - knn score list
-    # print(indices_list)
     for i,indices in enumerate(indices_list):
-        protein_id = Y[i][0]
-        # knnScores[protein_id] = []
+        protein_id = df[i][0]
         end = int(total_number * 29 / 100) + 1
         gap = int(total_number/100)
         gap = 1 if gap <= 0 else gap
@@ -169,7 +162,7 @@ def getKnnScore(indices_list, Y, total_number = 11906):
         # print("protein_id:", protein_id)
         # print("indices:",indices)
         for idx in range(1,end):
-            another_protein_id = Y[indices[idx]][0]
+            another_protein_id = df[indices[idx]][0]
             # print("another_protein_id:", another_protein_id)
             # print(fea_result)
             # print(fea_result[another_protein_id][1])
@@ -207,7 +200,6 @@ def getKnnScore(indices_list, Y, total_number = 11906):
     #             knnScore_dict[key] = knn_score
     # print(knnScore_dict)
     # return knnScore_dict
-
 
 def write_knnScore_tocsv():
     with open('data/knnScore_data.csv','w') as f:

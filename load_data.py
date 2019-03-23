@@ -11,6 +11,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms, utils
 import random
+import csv
 
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -31,10 +32,10 @@ class ProteinDataset(Dataset):
         self.properties_frame = pd_dataFrame
         # self.properties_frame = pd.read_csv(csv_file, header = None)
         # extract different part of data - name, label and properties
-        self.labels = self.properties_frame.ix[:,1].values.astype('int64')
-        self.labels[self.labels==-1] = 0 # modify -1 to 0
-        self.protein_names = self.properties_frame.ix[:,0]
-        self.properties_frame = self.properties_frame.ix[:,2:]
+        self.labels = self.properties_frame.ix[:,0].values.astype('float64')
+        # self.labels[self.labels==-1] = 0 # modify -1 to 0
+        # self.protein_names = self.properties_frame.ix[:,0]
+        self.properties_frame = self.properties_frame.ix[:,1:]
         self.transform = transform
 
     def __len__(self):
@@ -42,11 +43,11 @@ class ProteinDataset(Dataset):
 
     def __getitem__(self, idx):
         # convert pd.DataFrame to np.ndarray or other
-        protein_name = self.protein_names.ix[idx,:]
-        properties = self.properties_frame.ix[idx,:].values.astype('double')
+        # protein_name = self.protein_names.ix[idx,:]
+        properties = self.properties_frame.ix[idx,:].values.astype('float')
         label = self.labels[idx]
 
-        properties.resize((WIDTH, HEIGHT))
+        # properties.resize((WIDTH, HEIGHT))
         sample = (properties, label)
 
         if self.transform:
@@ -61,8 +62,8 @@ class ToTensor(object):
 
         # convert np.ndarray to tensor
         properties = torch.from_numpy(properties)
-        # insert depth
-        properties = properties.float().view(1, WIDTH, HEIGHT)
+        # insert depth   
+        properties = properties.float().view(1,4221)
         # properties = properties.float().view(1, HEIGHT, WIDTH)
         return properties, label
 
@@ -104,6 +105,47 @@ def kfold(X, y):
         X_train, X_val = X[train_index], X[val_index]
         y_train, y_val = y[train_index], y[val_index]
     return X_train, X_val, y_train, y_val
+
+
+# def readTrainingData(label_data_path='/home/chunhui/yi/DNN/NewData/data/train/part', index=0, total=10):
+def readTrainingData(label_data_path='./data/multihot_data/train/part', index=0, total=10):
+    # train_label = []
+    train_data = []
+
+    # validation_label = []
+    validation_data = []
+
+    for i in range(total):
+        with open('{}_{}.csv'.format(label_data_path, i)) as read_file:
+            reader = csv.reader(read_file)
+            if i == index:
+                for item in reader:
+                    validation_data.append(item)
+                    # validation_label.append(int(label))
+            else:
+                for item in reader:
+                    train_data.append(item)
+                    # train_label.append(int(label))
+    train_data = pd.DataFrame(data=train_data)
+    validation_data = pd.DataFrame(data=validation_data)
+    # return ProteinDataset(properties_frame, labels, properties_frame), ProteinDataset(properties_frame, labels, properties_frame)
+    # print(validation_data)
+    return train_data, validation_data
+
+# def readTestData(label_data_path='/home/chunhui/yi/DNN/NewData/data/test/part', index=0, total=10):
+def readTestData(label_data_path='./data/multihot_data/test/part', index=0, total=10):
+   
+    test_data = []
+    for i in range(total):
+        with open('{}_{}.csv'.format(label_data_path, i)) as read_file:
+            reader = csv.reader(read_file)
+            if i == index:
+                for item in reader:
+                    test_data.append(item)
+
+    test_data = pd.DataFrame(data = test_data)
+    # test_small_data = pd.DataFrame(data = test_small_data)
+    return test_data
 
 
 if __name__ == '__main__':

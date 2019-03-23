@@ -1,2 +1,2 @@
-from calculate import *
-from figure import *
+from .calculate import *
+from .figure import *
