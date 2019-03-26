@@ -89,8 +89,8 @@ def runAndDraw(model, args):
     with open('{}/analysis.csv'.format(args.model_path), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
-        test_final(model, rp, args, saved_model_name='best_accuracy')
-        test_final(model, rp, args, saved_model_name='best_loss')
+        test_final(model(), rp, args, saved_model_name='best_accuracy')
+        test_final(model(), rp, args, saved_model_name='best_loss')
         
     result_log_files = []
     for i in range(args.start, args.end):

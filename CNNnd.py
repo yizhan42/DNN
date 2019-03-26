@@ -19,11 +19,7 @@ class CNN_multihot(nn.Module):
             nn.ReLU(),                      # activation
             nn.MaxPool1d(kernel_size=CNN_P[0][5]),    # choose max value in 2x2 area, output shape (16, 14, 14)
         )
-        # self.conv2 = nn.Sequential(         # input shape (1, 14, 14)
-        #     nn.Conv2d(CNN_P[1][0], CNN_P[1][1], CNN_P[1][2], CNN_P[1][3], CNN_P[1][4]),     # output shape (32, 7, 7)
-        #     nn.ReLU(),                      # activation
-        #     nn.MaxPool2d(CNN_P[1][5]),                # output shape (32, 7, 7)
-        # )
+    
         self.conv2 = nn.Sequential(         # input shape (1, 14, 14)
             nn.Conv1d(CNN_P[1][0], CNN_P[1][1], CNN_P[1][2], CNN_P[1][3], CNN_P[1][4]),     # output shape (32, 7, 7)
             nn.ReLU(),                      # activation

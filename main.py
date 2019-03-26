@@ -17,7 +17,7 @@ from sklearn.metrics import roc_curve, auc
 from scipy import interp
 
 def main(args):   
-        model = CNN_multihot()       
+        model = CNN_multihot       
         run_main(model, args)
         runAndDraw(model, args)
 

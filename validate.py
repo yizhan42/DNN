@@ -46,7 +46,7 @@ def validate(model, validation, args):
 
     validation_x = [validation_data[i][0] for i in range(len(validation_data))]
     validation_x = Variable(torch.Tensor(validation_x)).reshape(346,1,4221)
-    print(validation_x.size())
+    # print(validation_x.size())
     validation_y = torch.from_numpy(validation_data.labels)
     validation_y = validation_y.long()
     validation_y = Variable(validation_y, requires_grad=False)

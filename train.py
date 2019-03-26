@@ -119,7 +119,7 @@ def train(model,training, validation, args, times=0):
             optimizer.step()
            
         loss /=  size
-        print("train_accuracy:",train_accuracy)
+        # print("train_accuracy:",train_accuracy)
         train_accuracy /= size
         
         # each epoch gets a val_accuracy and a validation_loss
@@ -272,11 +272,11 @@ def run_main(model, args):
         # standard_length=args.length,
         )   
         # model = CNN_multihot()
-        run_train(train_dataset, validation_dataset, model, args)
+        run_train(train_dataset, validation_dataset, model(), args)
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    run_main(CNN_multihot(),args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
+    run_main(CNN_multihot,args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
 
 
 # run_main是 main 函数，run_main 中跑 run_train， run_train 中调用train函数
