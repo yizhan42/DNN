@@ -66,7 +66,7 @@ def train(model,training, validation, args, times=0):
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
 
-    print("+++")
+    # print("+++")
     # train_data = ProteinDataSet(
     train_data = ProteinDataset(
         pd_dataFrame = training,
@@ -132,12 +132,6 @@ def train(model,training, validation, args, times=0):
         val_accuracy_list.append(val_accuracy)
        
         if args.log_result:
-            # with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
-            #     r.write('train_loss:{:10.7f} | validation_loss:{:10.7f} | val_accuracy:{:3.2f}\n'.format(
-            #         loss,
-            #         validation_loss,
-            #         val_accuracy
-            #     ))
             with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
                 r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
                     epoch,
@@ -239,7 +233,8 @@ def run_main(model, args):
         args.end = args.start + 1
     # save the origial argument in case the values changed when running the model
     save_folder = args.save_folder
-    
+    val_loss_folder = args.val_loss_folder
+    val_accuracy_folder = args.val_accuracy_folder
     args.cuda = torch.cuda.is_available() and args.cuda  # is cuda
 
     # Create save folder
@@ -266,7 +261,7 @@ def run_main(model, args):
     # Run for each Cross Validation data
     for i in range(args.start, args.end):
         if args.start != args.end:
-            args.save_folder = '{}/group_{}/'.format(save_folder, i)
+            args.save_folder = '{}/group_{}'.format(save_folder, i)
         # args.class_weight = class_weight
         print('Loading data from {}'.format(args.data_folder))
         
@@ -280,10 +275,6 @@ def run_main(model, args):
         run_train(train_dataset, validation_dataset, model, args)
 
 if __name__ == "__main__":
-    # print(BATCH_SIZE)
-    # i = 0
-    # for i in range(RUN_TIMES) :
-    #     bundle(CNN_multihot)
     args = parser.parse_args()
     run_main(CNN_multihot(),args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
 

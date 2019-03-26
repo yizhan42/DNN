@@ -101,16 +101,6 @@ def runAndDraw(model, args):
     
 
 if __name__ == "__main__":
-    # model = CNN_multihot()
-    # args = parser.parse_args()
-    # i = 0
-    # test_dataset = readTestData(
-    #     label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
-    #     index = i,
-    #     total=args.groups,
-    # )
-
-    # test_final(model, test_dataset, args, i)
     model = CNN_multihot()
     args = parser.parse_args()
     runAndDraw(model,args)
