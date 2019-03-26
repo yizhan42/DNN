@@ -62,7 +62,7 @@ def validate(model, validation, args):
 
     val_loss = criterion(pred_score, validation_y)
 
-    val_accuracy = torch.sum(torch.max(pred_score, 1)[1].data.squeeze() == validation_y.data.long()).numpy() / float(
+    val_accuracy = torch.sum(torch.max(pred_score, 1)[1].data.squeeze() == validation_y.data.long()).cpu().numpy() / float(
         validation_y.size(0))
 
     # validation_loss = val_loss.data[0] / validation_y.size(0)
