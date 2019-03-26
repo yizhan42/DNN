@@ -116,7 +116,7 @@ def drawLossFigure(train_loss_list, val_loss_list, save_path, is_print = True, i
     ax = plt.gca()
     ax.grid(True)
     if(is_save):
-        plt.savefig("/home/dlg/JL/yi/DNN/NewData/train_val_loss/loss_png", dpi = 80)
+        plt.savefig("./train_val_loss/loss_png", dpi = 80)
     if(is_print):
         plt.show()
 

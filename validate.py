@@ -6,7 +6,7 @@ from test_final import *
 from CNNnd import *
 from CNNst import *
 from torch.autograd import Variable
-
+from load_data import *
 
 # from train import *
 

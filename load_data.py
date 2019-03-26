@@ -53,6 +53,14 @@ class ProteinDataset(Dataset):
         if self.transform:
             sample = self.transform(sample)
         return sample
+        
+    def get_class_weight(self):
+        num_samples = self.__len__()
+        label_set = set(self.labels)
+        num_class = [self.labels.count(c) for c in label_set]
+        class_weight = [num_samples/float(self.labels.count(c))
+                        for c in label_set]
+        return class_weight, num_class
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
@@ -146,6 +154,18 @@ def readTestData(label_data_path='./data/multihot_data/test/part', index=0, tota
     test_data = pd.DataFrame(data = test_data)
     # test_small_data = pd.DataFrame(data = test_small_data)
     return test_data
+
+# def readData(label_data_path='data/train/part.csv', standard_length=300, alphabet=ALPHABET, aaindex=False):
+#     data = []
+#     labels = []
+#     with open(label_data_path) as read_file:
+#         reader = csv.reader(read_file, delimiter=',', quotechar='|')
+#         for id, label, sequence in reader:
+#             data.append(sequence)
+#             labels.append(int(label))
+#     return ProteinSequence(data, labels, standard_length, alphabet, aaindex=aaindex)
+
+
 
 
 if __name__ == '__main__':

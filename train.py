@@ -5,27 +5,29 @@ import pickle
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy import interp
-from sklearn.metrics import accuracy_score, auc, f1_score, roc_curve
-
-import analysis.figure
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.data as Data
+from scipy import interp
+from sklearn.metrics import accuracy_score, auc, f1_score, roc_curve
+from torch.autograd import Variable
+from torch.nn import init
+
+import analysis.figure
 import torchvision
 from analysis import *
+from analysis import drawLossFigureFromFile
+from analysis import write_and_print as wnp
 from CNNnd import *
 from CNNst import *
-# from FeatureSelectionData import *
 from load_data import *
-# from model import *
-# from process_data import *
 from settings import *
 from test_final import *
 from validate import *
-from torch.autograd import Variable
-from torch.nn import init
+
+import errno
+
 # from validate import *
 
 
@@ -93,8 +95,9 @@ def train(model,training, validation, args, times=0):
 
     for epoch in range(EPOCH):
         loss = 0
+        train_accuracy = 0
         size = 0
-        for step, (x, y) in enumerate(train_loader):# each batch
+        for batch, (x, y) in enumerate(train_loader):# each batch
             size += len(y)
             # put data in GPU
             if args.cuda:
@@ -103,17 +106,11 @@ def train(model,training, validation, args, times=0):
             b_x = Variable(x)  # batch x
             b_y = Variable(y.long(), requires_grad=False)  # batch y            
             y_score = model(b_x)
-            # y_score = Variable(y_score)
-            # print("y_score:",y_score)
+           
             train_loss = criterion(y_score, b_y)
-            # y_pred = torch.max(y_score, 1)[0]
-            # print("y_pred:",y_pred)
             
-            train_accuracy = sum(torch.max(y_score, 1)[1].data.squeeze() == b_y.data.long()) / float(
-                b_y.size(0))
+            train_accuracy += sum(torch.max(y_score, 1)[1].data.squeeze() == b_y.data.long()).data.item()
 
-            
-            # loss+=train_loss.data[0]
             loss+=train_loss.data.item()
             
       # Zero gradients, perform a backward pass, and update the weights.
@@ -122,6 +119,8 @@ def train(model,training, validation, args, times=0):
             optimizer.step()
            
         loss /=  size
+        print("train_accuracy:",train_accuracy)
+        train_accuracy /= size
         
         # each epoch gets a val_accuracy and a validation_loss
         val_accuracy, validation_loss = validate(model, validation, args)
@@ -131,14 +130,23 @@ def train(model,training, validation, args, times=0):
 
         train_accuracy_list.append(train_accuracy)
         val_accuracy_list.append(val_accuracy)
-
-        
+       
         if args.log_result:
+            # with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
+            #     r.write('train_loss:{:10.7f} | validation_loss:{:10.7f} | val_accuracy:{:3.2f}\n'.format(
+            #         loss,
+            #         validation_loss,
+            #         val_accuracy
+            #     ))
             with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
-                r.write('train_loss:{:10.7f} | validation_loss:{:10.7f} | val_accuracy:{:3.2f}\n'.format(
-                    loss,
+                r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
+                    epoch,
+                    batch,
                     validation_loss,
-                    val_accuracy
+                    loss,
+                    val_accuracy,
+                    train_accuracy,
+                    optimizer.state_dict()['param_groups'][0]['lr']
                 ))
 
         if (best_loss is None) or (validation_loss < best_loss):
@@ -162,11 +170,6 @@ def train(model,training, validation, args, times=0):
                             file_path)
             best_acc = val_accuracy
 
-       
-        if epoch % 10 == 0:
-            lg('    Epoch: {:4d} | train loss: {:7.6f}  | validation loss: {:7.6f} | validation accuracy: {:3.2f}'.format(
-                epoch, loss , validation_loss, val_accuracy))
-        
     # every EPOCH (100 epochs) get a average accuracy
     leng = len(val_accuracy_list)
     for i in range(EPOCH+1):
@@ -180,22 +183,10 @@ def train(model,training, validation, args, times=0):
         lg('Average accuracy is : {:7.6f}'.format(average_accuracy))
         # total_accuracy = 0
 
-    
-    # print("\n {}".format(print_f_score(y_pred, b_y, average="weighted")))
-    # print("\n {}".format(accuracy_score(model.predict(test_dataset), test_dataset.labels)))
+    drawLossFigureFromFile(
+        '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
 
 
-def bundle(model, times = 10):
-    args = parser.parse_args()
-     
-    train_dataset, validation_dataset = readTrainingData(
-        label_data_path='{}{}'.format(args.train_data_folder, args.prefix_filename),
-        index=i,
-        total=args.groups,
-        # standard_length=args.length,
-    )   
-    train(model,train_dataset,validation_dataset,args)   
-    plt_loss(args, train_loss_list, val_loss_list)
 
 def save_checkpoint(model, state, filename):
     # model_is_cuda = next(model.parameters()).is_cuda
@@ -203,8 +194,98 @@ def save_checkpoint(model, state, filename):
     state['state_dict'] = model.state_dict()
     torch.save(state,filename)
 
+
+def run_train(train_dataset, validation_dataset, model, args):
+    # Create save folder
+    try:
+        os.makedirs(args.save_folder)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            print('Directory {} already exists.'.format(args.save_folder))
+        else:
+            raise
+
+    # log result
+    if args.log_result:
+        result_fp = open(os.path.join(args.save_folder, 'result.csv'), 'a')
+    else:
+        result_fp = None
+    # Display info of each sample
+
+    wnp('Number of training samples: {}'.format(
+        str(train_dataset.__len__())), result_fp, is_write=args.log_result)
+
+    # log result title
+    wnp('\n{:>10s} | {:>10s} | {:>10s} | {:>10s} | {:>10s} | {:>10s} | {:>10s}'.format(
+        'epoch', 'batch', 'valid_loss', 'train_loss', 'valid_acc', 'train_acc', 'learn_rate'
+    ), result_fp, is_print=False, is_write=args.log_result)
+
+    if(args.log_result):
+        result_fp.close()
+
+    # train
+    train(model, train_dataset, validation_dataset, args)
+
+
+
+def run_main(model, args):
+    # load training data
+    print('Loading Configs...\n')
+    if(args.start >= args.groups):
+        print('Argument start should be smaller than groups. It is set to 0 forcedly.')
+        args.start = 0
+    if(args.end > args.groups or args.end <= args.start):
+        print('Argument end should be no larger than groups and larger than start. It is set to start+1 forcedly.')
+        args.end = args.start + 1
+    # save the origial argument in case the values changed when running the model
+    save_folder = args.save_folder
+    
+    args.cuda = torch.cuda.is_available() and args.cuda  # is cuda
+
+    # Create save folder
+    try:
+        os.makedirs(args.save_folder)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            print('Directory {} already exists.'.format(args.save_folder))
+        else:
+            raise
+
+    # configuration
+    log_fp = open('{}/arguments.md'.format(save_folder), 'w')
+    wnp('Configuration:', log_fp)
+    for attr, value in sorted(args.__dict__.items()):
+        wnp('    {}:'.format(attr.capitalize().replace(
+            '_', ' ')).ljust(25)+'{}'.format(value), log_fp)
+
+    # load model
+    # model = loadModule(args)
+    wnp('\n{}'.format(model), log_fp)
+    log_fp.close()
+
+    # Run for each Cross Validation data
+    for i in range(args.start, args.end):
+        if args.start != args.end:
+            args.save_folder = '{}/group_{}/'.format(save_folder, i)
+        # args.class_weight = class_weight
+        print('Loading data from {}'.format(args.data_folder))
+        
+        train_dataset, validation_dataset = readTrainingData(
+        label_data_path='{}{}'.format(args.train_data_folder, args.prefix_filename),
+        index=i,
+        total=args.groups,
+        # standard_length=args.length,
+        )   
+        # model = CNN_multihot()
+        run_train(train_dataset, validation_dataset, model, args)
+
 if __name__ == "__main__":
-    print(BATCH_SIZE)
-    i = 0
-    for i in range(RUN_TIMES) :
-        bundle(CNN_multihot)
+    # print(BATCH_SIZE)
+    # i = 0
+    # for i in range(RUN_TIMES) :
+    #     bundle(CNN_multihot)
+    args = parser.parse_args()
+    run_main(CNN_multihot(),args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
+
+
+# run_main是 main 函数，run_main 中跑 run_train， run_train 中调用train函数

@@ -21,7 +21,7 @@ LOG_PATH = 'log/'
 LOG_FILE = '{}log_{}.md'.format(LOG_PATH, DATETIME)
 FIGURE_FILE = '{}figure_{}.png'.format(LOG_PATH, DATETIME)
 # Hyper Parameters
-EPOCH = 2000              # train the training data n times, to save time, we just train 1 epoch
+EPOCH = 200             # train the training data n times, to save time, we just train 1 epoch
 # EPOCH = 1
 BATCH_SIZE = 100
 LR = 0.001              # learning rate
@@ -65,23 +65,24 @@ device.add_argument('--num-workers', default=0, type=int, help='Number of worker
 device.add_argument('--cuda', default=False, action='store_true', help='enable the gpu' )
 
 # cross validation data path
-# data.add_argument('--train-data-folder', default='/home/chunhui/yi/DNN/NewData/data/train/', metavar='DIR',
-#     help='path of training data folder')
-# data.add_argument('--cross-validation', default=False, action='store_true', help='Apply cross validation to reduce the random error.')
 data = parser.add_argument_group('Data options')
+data.add_argument('--data-folder', default='/data/multihot_data/train/', 
+    help='path of training data folder')
+data.add_argument('--cross-validation', default=False, action='store_true', help='Apply cross validation to reduce the random error.')
+
 data.add_argument('--groups', default=10, type=int,
     help='The number of the training groups.')
 data.add_argument('--start', default=0, type=int,
     help='Start gourp of this running. It must be smaller than groups.')
 data.add_argument('--end', default=10, type=int,
     help='End group of this running. Not including this group. It must not be largers than groups.')
-data.add_argument('--train-data-folder', default='./data/multihot_data/train/', metavar='DIR',
+data.add_argument('--train-data-folder', default='./data/multihot_data/train/', 
     help='path of training data folder')
 # data.add_argument('--test-data-folder', default='/home/chunhui/yi/DNN/NewData/data/test/', metavar='DIR',
 #     help='path of training data folder')
-data.add_argument('--test-data-folder', default='./data/multihot_data/test/', metavar='DIR',
+data.add_argument('--test-data-folder', default='./data/multihot_data/test/',
     help='path of training data folder')
-data.add_argument('--prefix-filename', default='part', metavar='DIR',
+data.add_argument('--prefix-filename', default='part', 
     help='prefix filename of splited cross validation data csv. If it\'s "part", then filename is "part_{}.csv".format(index).')
 data.add_argument('--length', default=300, type=int,
     help='The standard length of each sequence')
@@ -133,14 +134,15 @@ learn.add_argument('--milestones', default=[100, 200, 250], nargs='+', type=int,
 learn.add_argument('--decay-factor', default=0.1, type=float,
                    help='Decay factor for reducing learning rate [default: 0.5]')
 
-
-if(LOGGED):
-    log = open(LOG_FILE, 'w')
+parser.add_argument('--model-path', default='best_param')
     
+parser.add_argument('--prefix-groupname', default='group', metavar='DIR',
+    help='prefix name of each tained model. If it\'s "group", then path is "{}/group_{}/best.pth.tar".format(model_path, index).')
+log = open(LOG_FILE, 'w')
 def lg(string, p = IS_PRINTABLE, w = IS_WRITABLE):
     if p:
         print(string)
     if LOGGED and w:
         log.write(string + "\n")
 
-lg("Data csv file: {}\n".format(CSV_FILE))
+# lg("Data csv file: {}\n".format(CSV_FILE))

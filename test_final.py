@@ -5,94 +5,112 @@ import torch.nn as nn
 import torch.utils.data as Data
 import torchvision
 from analysis import *
-from train import *
+# from train import *
 # from dnn_main import *
 from load_data import *
 from scipy import interp
 from settings import *
 from sklearn.metrics import roc_curve, auc
 from torch.autograd import Variable
+from analysis import evaluate
+from CNNnd import *
+
+def test_final(model, rp, args, saved_model_name):
+    # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
+    #     'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
+    targets, predicts, es, accs = [], [], np.zeros(7), 0
+    for i in range(args.start, args.end):
+        
+        data_path = '{}/{}_{}.csv'.format(
+            args.test_data_folder, args.prefix_filename, i)
+        model_path = '{}/{}_{}/{}.pth.tar'.format(
+            args.model_path, args.prefix_groupname, i, saved_model_name)
 
 
-
-
-def test_final(model, testing, args, index):
-   
-    print("=> loading weights from './best_param/group_{}/best_accuracy.pth.tar'".format(index))
-
-    if args.cuda:
-        model = torch.nn.DataParallel(model).cuda()
-    # assert os.path.isfile(args.model_path), "=> no checkpoint found at '{}'".format(args.model_path)
-    checkpoint = torch.load('./best_param/group_{}/best_accuracy.pth.tar'.format(index))
-    model.load_state_dict(checkpoint['state_dict'])
-
-    print("****")
-    test_data = ProteinDataset(
-        pd_dataFrame=testing,
-    )
-
-    test_x = [test_data[i][0] for i in range(len(test_data))]
-    # print(test_x)
-    # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
-    test_x = Variable(torch.Tensor(test_x)).reshape(34,1,4221)
-    test_y = torch.from_numpy(test_data.labels).long()
-    if args.cuda:
-        test_x, test_y = test_x.cuda(), test_y.cuda()
-    test_output = model(test_x[:])
-    score = test_output.cpu().data.squeeze().numpy()
-
-    # score = torch.max(test_output, 1)[0].data.squeeze()
-    preds = torch.max(test_output,1)[1].data.squeeze()
-    #print(preds)
-    # print(test_data.labels,type(test_data.labels))
-    labels = (test_data.labels,[1-label for label in test_data.labels])
-
-    TP = 0
-    TN = 0
-    FP = 0
-    FN = 0
-    for i, pred in enumerate(preds):
-        if(test_y[i] == 0):
-            if(pred == test_y[i]):
-                TN += 1
-            else:
-                FN += 1
+        print("=> loading parameters from '{}'".format(model_path))
+        assert os.path.isfile(model_path), "=> no checkpoint found at '{}'".format(model_path)
+        if args.cuda:
+            checkpoint = torch.load(model_path)
         else:
-            if(pred == test_y[i]):
-                TP += 1
-            else:
-                FP += 1
-        lg('    Predict:{} Real:{} - {}'.format(pred, test_y[i], 'hit' if pred == test_y[i] else 'miss'))
+            checkpoint = torch.load(
+                model_path, map_location=lambda storage, loc: storage)
+        model.load_state_dict(checkpoint['state_dict'])
 
-    # lg('\nTotal Accuracy: {:5.4f} \n    Pos Precision: {:5.4f} | Neg Precision: {:5.4f} \n    Pos Recall   : {:5.4f} | Neg Recall   : {:5.4f}'.format((TP+TN)/float(test_y.size(0)),TP/float(TP+FP),TN/float(TN+FN),TP/float(TP+FN),TN/float(TN+FP)))
-    lg('\nTotal Accuracy: {:5.4f} \n    '.format((TP+TN)/float(test_y.size(0))))
-
-    fpr = dict()
-    tpr = dict()
-    thresholds = dict()
-    roc_auc = dict()
-
-    for i in range(Class_N):
+        # using GPU
+        if args.cuda:
+            model = torch.nn.DataParallel(model).cuda()
        
+        print('Loading Testing data from {}'.format(data_path))
+        test_dataset = readTestData(
+            label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
+            index = i,
+            total=args.groups,
+        )
+        test_data = ProteinDataset(
+            pd_dataFrame=test_dataset,
+        )
+        test_x = [test_data[i][0] for i in range(len(test_data))]
+        # print(test_x)
+        # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
+        test_x = Variable(torch.Tensor(test_x)).reshape(34,1,4221)
+        test_y = torch.from_numpy(test_data.labels).long()
 
-        fpr[i], tpr[i], thresholds[i] = roc_curve(labels[0], score[:,i], pos_label = i)
-        # print("fpr[{}]:".format(i), fpr[i])
-        # print("tpr[{}]:".format(i), tpr[i])
-        roc_auc[i] = auc(fpr[i], tpr[i])
-        # print("auc[{}]:".format(i), roc_auc[i])
-    lg('    Pos AUC      :{} | Neg AUC      :{}'.format(roc_auc[0],roc_auc[1]))
-    #lg("\n-------- {} time(s) CNN module end --------\n\n".format(times))
-    print("finished")
-    return (fpr,tpr,roc_auc)
+        if args.cuda:
+            test_x, test_y = test_x.cuda(), test_y.cuda()
+        
+        test_output = model(test_x[:])
+        score = test_output.cpu().data.squeeze().numpy()
+        # score = torch.max(test_output, 1)[0].data.squeeze()
+        preds = torch.max(test_output,1)[1].data.squeeze()
+        #print(preds)
+        # print(test_data.labels,type(test_data.labels))
+        labels = (test_data.labels,[1-label for label in test_data.labels])
+
+        # accuracy, sens, spec, ppv, npv, f1, mcc, acc[neg, pos]
+        evaluations, accuracy = evaluate(test_y, preds)
+
+        predicts.append(preds)
+        targets.append(test_y)
+        es += evaluations
+        accs+= sum(accuracy)/2
+    
+    es /= args.end - args.start
+    accs /= args.end - args.start
+    
+    rp.write(' {:^5s} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} \n'.format(
+        'Mean', es[0], accs, es[6], es[1], es[2], es[5]))
+
+    drawMeanRoc(
+        targets, predicts, pos_label=1, is_show=False,
+        save_file='{}/{}_roc.png'.format(args.model_path, saved_model_name))
+
+
+def runAndDraw(model, args):  
+    with open('{}/analysis.csv'.format(args.model_path), 'w') as rp:
+        rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
+        'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
+        test_final(model, rp, args, saved_model_name='best_accuracy')
+        test_final(model, rp, args, saved_model_name='best_loss')
+        
+    result_log_files = []
+    for i in range(args.start, args.end):
+        result_log_files.append(
+            '{}/{}_{}/result.csv'.format(args.model_path, args.prefix_groupname, i))
+    drawLossFigureWhenCrossValidatingInMultFiles(
+        result_log_files, save_path=args.model_path, is_print=False, is_save=True)
+    
 
 if __name__ == "__main__":
+    # model = CNN_multihot()
+    # args = parser.parse_args()
+    # i = 0
+    # test_dataset = readTestData(
+    #     label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
+    #     index = i,
+    #     total=args.groups,
+    # )
+
+    # test_final(model, test_dataset, args, i)
     model = CNN_multihot()
     args = parser.parse_args()
-    i = 0
-    test_dataset = readTestData(
-        label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
-        index = i,
-        total=args.groups,
-    )
-
-    test_final(model, test_dataset, args, i)
+    runAndDraw(model,args)

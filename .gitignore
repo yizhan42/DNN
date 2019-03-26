@@ -9,3 +9,6 @@ log/*
 *.java
 .vscode/*
 *.pth.tar
+
+*.png
+*.md
