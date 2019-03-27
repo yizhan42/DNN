@@ -141,40 +141,34 @@ def readTrainingData(label_data_path='./data/multihot_data/train/part', index=0,
     return train_data, validation_data
 
 # def readTestData(label_data_path='/home/chunhui/yi/DNN/NewData/data/test/part', index=0, total=10):
-def readTestData(label_data_path='./data/multihot_data/test/part', index=0, total=10):
-   
-    test_data = []
-    for i in range(total):
-        with open('{}_{}.csv'.format(label_data_path, i)) as read_file:
-            reader = csv.reader(read_file)
-            if i == index:
-                for item in reader:
-                    test_data.append(item)
+def readTestData(label_data_path='./data/multihot_data/test/test_joint_without_id.csv'):  
+    test_data = []   
+    with open(label_data_path) as read_file:
+        reader = csv.reader(read_file)            
+        for item in reader:
+            test_data.append(item)
 
     test_data = pd.DataFrame(data = test_data)
     # test_small_data = pd.DataFrame(data = test_small_data)
     return test_data
 
-# def readData(label_data_path='data/train/part.csv', standard_length=300, alphabet=ALPHABET, aaindex=False):
-#     data = []
-#     labels = []
-#     with open(label_data_path) as read_file:
-#         reader = csv.reader(read_file, delimiter=',', quotechar='|')
-#         for id, label, sequence in reader:
-#             data.append(sequence)
-#             labels.append(int(label))
-#     return ProteinSequence(data, labels, standard_length, alphabet, aaindex=aaindex)
 
 
-
+def dropFirstColumn():
+    with open('data/multihot_data/test/test_all.csv','r') as reader, open('data/multihot_data/test/test_all_withoutID.csv','w') as writer:
+        for line in reader:
+            items = line.split(',')
+            print(','.join(items[1:]), file = writer)
 
 if __name__ == '__main__':
     # # load_data(CSV_FILE)
-    train, test = randomSplit(csv_file = CSV_FILE, pos_size=POS_SIZE, neg_size=NEG_SIZE, pick_rate=PICK_RATE)
-    protein_dataset = ProteinDataset(train, transform = ToTensor())
-    for i in range(len(protein_dataset)):
-        properties, label = protein_dataset[i]
-        print(i, type(properties), properties.size(), label)
+    # train, test = randomSplit(csv_file = CSV_FILE, pos_size=POS_SIZE, neg_size=NEG_SIZE, pick_rate=PICK_RATE)
+    # protein_dataset = ProteinDataset(train, transform = ToTensor())
+    # for i in range(len(protein_dataset)):
+    #     properties, label = protein_dataset[i]
+    #     print(i, type(properties), properties.size(), label)
 
-        if i == 0:
-            break;
+    #     if i == 0:
+    #         break;
+    dropFirstColumn()
+

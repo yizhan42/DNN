@@ -21,8 +21,9 @@ def test_final(model, rp, args, saved_model_name):
     targets, predicts, es, accs = [], [], np.zeros(7), 0
     for i in range(args.start, args.end):
         
-        data_path = '{}/{}_{}.csv'.format(
-            args.test_data_folder, args.prefix_filename, i)
+        # data_path = '{}/{}_{}.csv'.format(
+        #     args.test_data_folder, args.prefix_filename, i)
+        data_path = './data/multihot_data/test/test_joint_without_id.csv'
         model_path = '{}/{}_{}/{}.pth.tar'.format(
             args.model_path, args.prefix_groupname, i, saved_model_name)
 
@@ -42,9 +43,10 @@ def test_final(model, rp, args, saved_model_name):
        
         print('Loading Testing data from {}'.format(data_path))
         test_dataset = readTestData(
-            label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
-            index = i,
-            total=args.groups,
+            # label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
+            data_path,
+            # index = i,
+            # total=args.groups,
         )
         test_data = ProteinDataset(
             pd_dataFrame=test_dataset,
@@ -52,7 +54,7 @@ def test_final(model, rp, args, saved_model_name):
         test_x = [test_data[i][0] for i in range(len(test_data))]
         # print(test_x)
         # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
-        test_x = Variable(torch.Tensor(test_x)).reshape(34,1,4221)
+        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,4221)
         test_y = torch.from_numpy(test_data.labels).long()
 
         if args.cuda:
@@ -101,6 +103,7 @@ def runAndDraw(model, args):
     
 
 if __name__ == "__main__":
-    model = CNN_multihot()
+    
+    model = CNN_multihot
     args = parser.parse_args()
     runAndDraw(model,args)

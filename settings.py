@@ -80,7 +80,7 @@ data.add_argument('--train-data-folder', default='./data/multihot_data/train/',
     help='path of training data folder')
 # data.add_argument('--test-data-folder', default='/home/chunhui/yi/DNN/NewData/data/test/', metavar='DIR',
 #     help='path of training data folder')
-data.add_argument('--test-data-folder', default='./data/multihot_data/test/',
+data.add_argument('--test-data-folder', default='./data/multihot_data/test/test_joint_without_id.csv',
     help='path of training data folder')
 data.add_argument('--prefix-filename', default='part', 
     help='prefix filename of splited cross validation data csv. If it\'s "part", then filename is "part_{}.csv".format(index).')
