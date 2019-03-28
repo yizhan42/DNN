@@ -11,7 +11,7 @@ def drawLossFigure(epoch, train_loss, valid_loss, save_path, is_print=True, is_s
     plt.title('Train & Validation Loss Figure')
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.ylim((0, 1.5))
+    # plt.ylim((0, 1.5)) # 写死为Y轴为 0 - 1.5
     plt.xticks(np.arange(epoch[0]-1, epoch[-1]+1, 20*(epoch[-1]//1000+1)))
     # plt.yticks(np.arange(0.0, 1.0, 0.1))
     plt.plot(epoch, valid_loss, '-', label='validation')

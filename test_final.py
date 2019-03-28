@@ -25,7 +25,7 @@ def test_final(model, rp, args, saved_model_name):
         #     args.test_data_folder, args.prefix_filename, i)
         data_path = './data/multihot_data/test/test_joint_without_id.csv'
         model_path = '{}/{}_{}/{}.pth.tar'.format(
-            args.model_path, args.prefix_groupname, i, saved_model_name)
+            args.save_folder, args.prefix_groupname, i, saved_model_name)
 
 
         print("=> loading parameters from '{}'".format(model_path))
