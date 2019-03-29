@@ -52,7 +52,7 @@ def validate(model, validation, args):
     validation_y = validation_y.long()
     validation_y = Variable(validation_y, requires_grad=False)
 
-    criterion = torch.nn.NLLLoss()
+    criterion = torch.nn.NLLLoss(reduction='sum')
 
     if args.cuda:
         validation_x, validation_y = validation_x.cuda(), validation_y.cuda()

@@ -77,7 +77,7 @@ def train(model,training, validation, args, times=0):
     train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
 
     # criterion = torch.nn.MSELoss(size_average=False)
-    criterion = torch.nn.NLLLoss()
+    criterion = torch.nn.NLLLoss(reduction='sum')
 
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
