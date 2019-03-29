@@ -263,10 +263,10 @@ def run_main(model, args):
         if args.start != args.end:
             args.save_folder = '{}/group_{}'.format(save_folder, i)
         # args.class_weight = class_weight
-        print('Loading data from {}'.format(args.data_folder))
+        print('Loading data from {}/train'.format(args.data_folder))
         
         train_dataset, validation_dataset = readTrainingData(
-        label_data_path='{}{}'.format(args.train_data_folder, args.prefix_filename),
+        label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename),
         index=i,
         total=args.groups,
         # standard_length=args.length,

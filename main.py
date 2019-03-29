@@ -18,7 +18,8 @@ from scipy import interp
 
 def main(args):   
         # model = CNN_multihot
-        model =  CNN_knnscore      
+        # model =  CNN_knnscore  
+        model = globals()[args.model]    
         run_main(model, args)
         runAndDraw(model, args)
 

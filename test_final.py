@@ -26,7 +26,7 @@ def test_final(model, rp, args, saved_model_name):
         
         # data_path = '{}/{}_{}.csv'.format(
         #     args.test_data_folder, args.prefix_filename, i)
-        data_path = './data/multihot_data/test/test_joint_without_id.csv'
+        data_path = '{}/test/test_joint_without_id.csv'.format(args.data_folder)
         model_path = '{}/{}_{}/{}.pth.tar'.format(
             args.save_folder, args.prefix_groupname, i, saved_model_name)
 
@@ -93,7 +93,7 @@ def test_final(model, rp, args, saved_model_name):
 def runAndDraw(model, args):  
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
-        'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
+        'Group', 'accuracy', 'mean accuracy', 'mcc', 'sens', 'spec', 'f1'))
         test_final(model(), rp, args, saved_model_name='best_accuracy')
         test_final(model(), rp, args, saved_model_name='best_loss')
         

@@ -66,7 +66,7 @@ device.add_argument('--cuda', default=False, action='store_true', help='enable t
 
 # cross validation data path
 data = parser.add_argument_group('Data options')
-data.add_argument('--data-folder', default='/data/multihot_data/train/', 
+data.add_argument('--data-folder', default='data/multihot_data/', 
     help='path of training data folder')
 data.add_argument('--cross-validation', default=False, action='store_true', help='Apply cross validation to reduce the random error.')
 
@@ -76,7 +76,7 @@ data.add_argument('--start', default=0, type=int,
     help='Start gourp of this running. It must be smaller than groups.')
 data.add_argument('--end', default=10, type=int,
     help='End group of this running. Not including this group. It must not be largers than groups.')
-data.add_argument('--train-data-folder', default='./data/multihot_data/train/', 
+data.add_argument('--train-data-folder', default='./data/multihot_data/', 
     help='path of training data folder')
 # data.add_argument('--test-data-folder', default='/home/chunhui/yi/DNN/NewData/data/test/', metavar='DIR',
 #     help='path of training data folder')
@@ -106,8 +106,8 @@ experiment.add_argument('--print-interval', type=int, default=1, help='how many 
 
 # common learning options
 learn = parser.add_argument_group('Learning options')
-# learn.add_argument('--model', default='CNN1',
-                #    help='Type of model. {} are supported [default: CNN1]'.format(models))
+learn.add_argument('--model', default='CNN_knnscore',
+                   help='Type of model. {} are supported [default: CNN1]')
 learn.add_argument('--num-class', type=int, default=2,help='The number of classes.')
 
 

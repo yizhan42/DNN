@@ -155,10 +155,12 @@ def readTestData(label_data_path='./data/multihot_data/test/test_joint_without_i
 
 
 def dropFirstColumn():
-    with open('data/multihot_data/test/test_all.csv','r') as reader, open('data/multihot_data/test/test_all_withoutID.csv','w') as writer:
-        for line in reader:
-            items = line.split(',')
-            print(','.join(items[1:]), file = writer)
+    for i in range(10):
+        with open('data/knnscore_data/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data/train/part_{}.csv'.format(i),'w') as writer:
+            for line in reader:
+                items = line.split(',')
+                print(','.join(items[1:]), file = writer)
+                # writer.write(','.join(items[1:]) + '\n')
 
 if __name__ == '__main__':
     # # load_data(CSV_FILE)
