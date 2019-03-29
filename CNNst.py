@@ -28,7 +28,7 @@ class CNN_knnscore(nn.Module):
         # self.out1 = nn.Linear(RS_Size, Class_N, True)   # fully connected layer, output 2 classes
         self.out1 = nn.Linear(RS_Size, 2, True)
         # self.out2 = nn.Softmax()
-        self.out2 = nn.Softmax()
+        self.out2 = nn.LogSoftmax(dim = 1)
     
     def forward(self, x):
         x = self.conv1(x)
