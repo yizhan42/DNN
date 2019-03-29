@@ -71,8 +71,6 @@ def test_final(model, rp, args, saved_model_name):
         # accuracy, sens, spec, ppv, npv, f1, mcc, acc[neg, pos]
         evaluations, accuracy = evaluate(test_y, preds)
 
-        predicts.append(preds)
-        targets.append(test_y)
         rp.write(' {:^5d} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} \n'.format(
             i, evaluations[0], sum(accuracy)/2, evaluations[6], evaluations[1], evaluations[2], evaluations[5]))
 
