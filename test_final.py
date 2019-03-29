@@ -19,6 +19,9 @@ def test_final(model, rp, args, saved_model_name):
     # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
     #     'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
     targets, predicts, es, accs = [], [], np.zeros(7), 0
+    # using GPU
+    if args.cuda:
+        model = torch.nn.DataParallel(model).cuda()
     for i in range(args.start, args.end):
         
         # data_path = '{}/{}_{}.csv'.format(
@@ -35,11 +38,8 @@ def test_final(model, rp, args, saved_model_name):
         else:
             checkpoint = torch.load(
                 model_path, map_location=lambda storage, loc: storage)
+               
         model.load_state_dict(checkpoint['state_dict'])
-
-        # using GPU
-        if args.cuda:
-            model = torch.nn.DataParallel(model).cuda()
        
         print('Loading Testing data from {}'.format(data_path))
         test_dataset = readTestData(
@@ -73,6 +73,11 @@ def test_final(model, rp, args, saved_model_name):
 
         predicts.append(preds)
         targets.append(test_y)
+        rp.write(' {:^5d} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} \n'.format(
+            i, evaluations[0], sum(accuracy)/2, evaluations[6], evaluations[1], evaluations[2], evaluations[5]))
+
+        predicts.append(preds.cpu())
+        targets.append(test_y.cpu())
         es += evaluations
         accs+= sum(accuracy)/2
     
@@ -84,11 +89,11 @@ def test_final(model, rp, args, saved_model_name):
 
     drawMeanRoc(
         targets, predicts, pos_label=1, is_show=False,
-        save_file='{}/{}_roc.png'.format(args.model_path, saved_model_name))
+        save_file='{}/{}_roc.png'.format(args.save_folder, saved_model_name))
 
 
 def runAndDraw(model, args):  
-    with open('{}/analysis.csv'.format(args.model_path), 'w') as rp:
+    with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
         test_final(model(), rp, args, saved_model_name='best_accuracy')
@@ -97,9 +102,9 @@ def runAndDraw(model, args):
     result_log_files = []
     for i in range(args.start, args.end):
         result_log_files.append(
-            '{}/{}_{}/result.csv'.format(args.model_path, args.prefix_groupname, i))
+            '{}/{}_{}/result.csv'.format(args.save_folder, args.prefix_groupname, i))
     drawLossFigureWhenCrossValidatingInMultFiles(
-        result_log_files, save_path=args.model_path, is_print=False, is_save=True)
+        result_log_files, save_path=args.save_folder, is_print=False, is_save=True)
     
 
 if __name__ == "__main__":

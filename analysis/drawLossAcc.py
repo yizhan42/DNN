@@ -110,6 +110,7 @@ def drawLossFigureWhenCrossValidatingInMultFiles(files, save_path, is_print=True
     trains = np.array(trains)
     accs = np.array(accs)
     # print(vals)
+
     mean_val = np.mean(vals, axis=0)
     std_val = np.std(vals, axis=0)
     val_upper = np.minimum(mean_val + std_val, 1.3)
@@ -139,9 +140,9 @@ def drawLossFigureWhenCrossValidatingInMultFiles(files, save_path, is_print=True
     # print(epoches)
     plt.plot(epoches, mean_val, '-', label='Val mean loss')
     plt.plot(epoches, mean_train, '-', label='Tra mean loss')
-    plt.fill_between(epoches, train_lower, train_upper, color='yellow', alpha=.2,
+    plt.fill_between(epoches, train_lower, train_upper, color='green', alpha=.2,
                      label=r'Tra std loss')
-    plt.fill_between(epoches, val_lower, val_upper, color='blue', alpha=.2,
+    plt.fill_between(epoches, val_lower, val_upper, color='red', alpha=.2,
                      label=r'Val std loss')
     plt.legend(fontsize=20, loc='lower left')
     # plt.subplot(111).grid(True, which='major')
@@ -162,7 +163,7 @@ def drawLossFigureWhenCrossValidatingInMultFiles(files, save_path, is_print=True
     # plt.yticks(np.arange(0.0, 1.0, 0.1))
     plt.plot(epoches, mean_acc, '-', label='Mean acc')
     # plt.plot(epoches, mean_train, '-', label='Mean-Training')
-    plt.fill_between(epoches, acc_lower, acc_upper, color='yellow', alpha=.2,
+    plt.fill_between(epoches, acc_lower, acc_upper, color='green', alpha=.2,
                      label=r'Std acc')
     # plt.fill_between(epoches, val_lower, val_upper, color='blue', alpha=.2,
     #              label=r'Validation loss')
