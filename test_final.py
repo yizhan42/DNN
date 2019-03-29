@@ -14,6 +14,7 @@ from sklearn.metrics import roc_curve, auc
 from torch.autograd import Variable
 from analysis import evaluate
 from CNNnd import *
+from CNNst import *
 
 def test_final(model, rp, args, saved_model_name):
     # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
@@ -54,7 +55,7 @@ def test_final(model, rp, args, saved_model_name):
         test_x = [test_data[i][0] for i in range(len(test_data))]
         # print(test_x)
         # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
-        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,4221)
+        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,args.length)
         test_y = torch.from_numpy(test_data.labels).long()
 
         if args.cuda:
@@ -107,6 +108,7 @@ def runAndDraw(model, args):
 
 if __name__ == "__main__":
     
-    model = CNN_multihot
+    # model = CNN_knnscore
     args = parser.parse_args()
+    model = globals()[args.model]  
     runAndDraw(model,args)

@@ -64,6 +64,8 @@ class ProteinDataset(Dataset):
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
+    def __init__(self, args):
+        self.args = args
 
     def __call__(self, sample):
         properties, label = sample
@@ -71,7 +73,7 @@ class ToTensor(object):
         # convert np.ndarray to tensor
         properties = torch.from_numpy(properties)
         # insert depth   
-        properties = properties.float().view(1,4221)
+        properties = properties.float().view(1,self.args.length)
         # properties = properties.float().view(1, HEIGHT, WIDTH)
         return properties, label
 

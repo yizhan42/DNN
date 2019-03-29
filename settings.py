@@ -85,7 +85,7 @@ data.add_argument('--test-data-folder', default='./data/multihot_data/test/test_
 data.add_argument('--prefix-filename', default='part', 
     help='prefix filename of splited cross validation data csv. If it\'s "part", then filename is "part_{}.csv".format(index).')
 data.add_argument('--length', default=300, type=int,
-    help='The standard length of each sequence')
+    help='The length of data column number')
 
  #Logging options
 experiment = parser.add_argument_group('Logging options')

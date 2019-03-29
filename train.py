@@ -70,7 +70,7 @@ def train(model,training, validation, args, times=0):
     # train_data = ProteinDataSet(
     train_data = ProteinDataset(
         pd_dataFrame = training,
-        transform = ToTensor()
+        transform = ToTensor(args)
     )
    
 
@@ -276,7 +276,8 @@ def run_main(model, args):
     args.save_folder = save_folder
 if __name__ == "__main__":
     args = parser.parse_args()
-    run_main(CNN_multihot,args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
+    model = globals()[args.model] 
+    run_main(model,args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
 
 
 # run_main是 main 函数，run_main 中跑 run_train， run_train 中调用train函数
