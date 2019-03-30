@@ -159,7 +159,7 @@ def readTestData(label_data_path='./data/multihot_data/test/test_joint_without_i
 
 def dropFirstColumn():
     for i in range(10):
-        with open('data/knnscore_data/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data/train/part_{}.csv'.format(i),'w') as writer:
+        with open('data/knnscore_data_0330/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data_0330/train/part_{}.csv'.format(i),'w') as writer:
             for line in reader:
                 items = line.split(',')
                 # print(','.join(items[1:]), file = writer)
@@ -168,7 +168,7 @@ def dropFirstColumn():
 
 
 def dropFirstColumn1():
-    with open('data/knnscore_data/test/test_joint_without_id.csv','r') as reader, open('data/knnscore_data/test/test_joint_without_id_new.csv','w') as writer:
+    with open('data/knnscore_data/test_all_100.csv','r') as reader, open('data/knnscore_data/test/test_joint_without_id_new.csv','w') as writer:
         for line in reader:
             items = line.split(',')
             # print(','.join(items[1:]), file = writer)
@@ -182,6 +182,23 @@ def checkColumnNum():
             print(len(line))
 
 
+# def checkData():
+#     data = []
+#     for i in range(10):
+#         filepath = "data/knnscore_data/train/part_{}".format(i)
+#         with open(filepath, 'r') as fp:
+#             data.append([x.split(',')[0] for x in fp])
+# count = 0
+# all= [] 
+# for i in data:
+#     print(len(i))
+#     j = set(i)
+#     all+=i
+#     count += len(j)
+#     print(len(j))
+# print(len(set(all)))
+# print(count)
+#     return data
 
 
 if __name__ == '__main__':
@@ -194,6 +211,6 @@ if __name__ == '__main__':
 
     #     if i == 0:
     #         break;
-    dropFirstColumn1()
+    dropFirstColumn()
     # checkColumnNum()
 

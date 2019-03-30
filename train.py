@@ -93,7 +93,7 @@ def train(model,training, validation, args, times=0):
         scheduler = torch.optim.lr_scheduler.MultiStepLR(
             optimizer, milestones=args.milestones, gamma=args.decay_factor, last_epoch=-1)
 
-    for epoch in range(EPOCH):
+    for epoch in range(args.epochs):
         loss = 0
         train_accuracy = 0
         size = 0
@@ -164,18 +164,18 @@ def train(model,training, validation, args, times=0):
                             file_path)
             best_acc = val_accuracy
 
-    # every EPOCH (100 epochs) get a average accuracy
-    leng = len(val_accuracy_list)
-    for i in range(EPOCH+1):
-        if i == 0:
-            pass
-        total_accuracy += val_accuracy_list[-i]
+    # # every EPOCH (100 epochs) get a average accuracy
+    # leng = len(val_accuracy_list)
+    # for i in range(args.epochs+1):
+    #     if i == 0:
+    #         pass
+    #     total_accuracy += val_accuracy_list[-i]
 
-    if epoch == EPOCH-1:
-        print(leng)
-        average_accuracy = total_accuracy / EPOCH
-        lg('Average accuracy is : {:7.6f}'.format(average_accuracy))
-        # total_accuracy = 0
+    # if epoch == args.epochs-1:
+    #     print(leng)
+    #     average_accuracy = total_accuracy / args.epochs
+    #     lg('Average accuracy is : {:7.6f}'.format(average_accuracy))
+    #     # total_accuracy = 0
 
     drawLossFigureFromFile(
         '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
