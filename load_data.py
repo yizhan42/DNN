@@ -161,8 +161,10 @@ def dropFirstColumn():
         with open('data/knnscore_data/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data/train/part_{}.csv'.format(i),'w') as writer:
             for line in reader:
                 items = line.split(',')
-                print(','.join(items[1:]), file = writer)
-                # writer.write(','.join(items[1:]) + '\n')
+                # print(','.join(items[1:]), file = writer)
+                writer.write(','.join(items[1:]))
+                # writer.write(','.join(items[1:]) + '\n') #这样写导致每隔一行都多一行空格
+
 
 if __name__ == '__main__':
     # # load_data(CSV_FILE)
