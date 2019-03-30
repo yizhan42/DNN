@@ -74,6 +74,7 @@ class ToTensor(object):
         properties = torch.from_numpy(properties)
         # insert depth   
         properties = properties.float().view(1,self.args.length)
+        # properties = properties.float()
         # properties = properties.float().view(1, HEIGHT, WIDTH)
         return properties, label
 
@@ -165,6 +166,14 @@ def dropFirstColumn():
                 writer.write(','.join(items[1:]))
                 # writer.write(','.join(items[1:]) + '\n') #这样写导致每隔一行都多一行空格
 
+def checkColumnNum():
+    with open('data/knnscore_data/train/part_0.csv') as f:
+        for line in f:
+            line = line.split(',')
+            print(len(line))
+
+
+
 
 if __name__ == '__main__':
     # # load_data(CSV_FILE)
@@ -176,5 +185,6 @@ if __name__ == '__main__':
 
     #     if i == 0:
     #         break;
-    dropFirstColumn()
+    # dropFirstColumn()
+    checkColumnNum()
 

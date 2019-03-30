@@ -84,7 +84,7 @@ data.add_argument('--test-data-folder', default='./data/multihot_data/test/test_
     help='path of training data folder')
 data.add_argument('--prefix-filename', default='part', 
     help='prefix filename of splited cross validation data csv. If it\'s "part", then filename is "part_{}.csv".format(index).')
-data.add_argument('--length', default=300, type=int,
+data.add_argument('--length', default=175, type=int,
     help='The length of data column number')
 
  #Logging options
