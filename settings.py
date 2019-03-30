@@ -1,6 +1,5 @@
 # coding=utf8
 
-from model import models, loadModel
 import datetime
 import argparse
 

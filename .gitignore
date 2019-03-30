@@ -1,0 +1,14 @@
+data/*
+log/*
+
+*.pyc
+
+*.csv
+*.mat
+*.zip
+*.java
+.vscode/*
+*.pth.tar
+
+*.png
+*.md
