@@ -19,9 +19,70 @@ from sklearn.model_selection import KFold
 from settings import *
 
 # Load Data with testing and training data randomly splited.
+# class ProteinDataset(Dataset):
+#     """ Proteint Dataset. """
+#     def __init__(self, pd_dataFrame, transform = None):
+#         """
+#         Args:
+#             csv_file (string): Path to the csv file with annotations.
+#             transform (callable, optional): Optional transform to be applied
+#                 on a sample.
+#         """
+#         # read csv file without header row
+#         self.properties_frame = pd_dataFrame
+#         # self.properties_frame = pd.read_csv(csv_file, header = None)
+#         # extract different part of data - name, label and properties
+#         self.labels = self.properties_frame.ix[:,0].values.astype('float64')
+#         # self.labels[self.labels==-1] = 0 # modify -1 to 0
+#         # self.protein_names = self.properties_frame.ix[:,0]
+#         self.properties_frame = self.properties_frame.ix[:,1:]
+#         self.transform = transform
+
+#     def __len__(self):
+#         return len(self.properties_frame)
+
+#     def __getitem__(self, idx):
+#         # convert pd.DataFrame to np.ndarray or other
+#         # protein_name = self.protein_names.ix[idx,:]
+#         properties = self.properties_frame.ix[idx,:].values.astype('float')
+#         label = self.labels[idx]
+
+#         # properties.resize((WIDTH, HEIGHT))
+#         sample = (properties, label)
+
+#         if self.transform:
+#             sample = self.transform(sample)
+#         return sample
+        
+#     def get_class_weight(self):
+#         num_samples = self.__len__()
+#         label_set = set(self.labels)
+#         num_class = [self.labels.count(c) for c in label_set]
+#         class_weight = [num_samples/float(self.labels.count(c))
+#                         for c in label_set]
+#         return class_weight, num_class
+
+# class ToTensor(object):
+#     """Convert ndarrays in sample to Tensors."""
+#     def __init__(self, args):
+#         self.args = args
+
+#     def __call__(self, sample):
+#         properties, label = sample
+
+#         # convert np.ndarray to tensor
+#         properties = torch.from_numpy(properties)
+#         # insert depth   
+#         properties = properties.float().view(1,self.args.length)
+#         # properties = properties.float()
+#         # properties = properties.float().view(1, HEIGHT, WIDTH)
+#         return properties, label
+
+
 class ProteinDataset(Dataset):
     """ Proteint Dataset. """
     def __init__(self, pd_dataFrame, transform = None):
+    
         """
         Args:
             csv_file (string): Path to the csv file with annotations.
@@ -31,9 +92,18 @@ class ProteinDataset(Dataset):
         # read csv file without header row
         self.properties_frame = pd_dataFrame
         # self.properties_frame = pd.read_csv(csv_file, header = None)
-        # extract different part of data - name, label and properties
+        # extract different part of data - name, label and
+
+        # previous data with id (which is the first column)
+        # self.labels = self.properties_frame.ix[:,1].as_matrix().astype('int64')
+
+        # after feature selection, data without id(which is the first column before)
+        # self.labels = self.properties_frame.ix[:,0].as_matrix().astype('float64')
         self.labels = self.properties_frame.ix[:,0].values.astype('float64')
+        # print(self.labels)
         # self.labels[self.labels==-1] = 0 # modify -1 to 0
+
+        # after feature selection, data without protein id, i.e. protein name
         # self.protein_names = self.properties_frame.ix[:,0]
         self.properties_frame = self.properties_frame.ix[:,1:]
         self.transform = transform
@@ -43,7 +113,14 @@ class ProteinDataset(Dataset):
 
     def __getitem__(self, idx):
         # convert pd.DataFrame to np.ndarray or other
+
+        # after featuer selection,new data without protein_name
         # protein_name = self.protein_names.ix[idx,:]
+
+#print(self.properties_frame.ix[idx, :])
+        # properties = self.properties_frame.ix[idx, :].as_matrix().astype('double')
+
+        # properties = self.properties_frame.ix[idx,:].as_matrix().astype('float')
         properties = self.properties_frame.ix[idx,:].values.astype('float')
         label = self.labels[idx]
 
@@ -53,30 +130,22 @@ class ProteinDataset(Dataset):
         if self.transform:
             sample = self.transform(sample)
         return sample
-        
-    def get_class_weight(self):
-        num_samples = self.__len__()
-        label_set = set(self.labels)
-        num_class = [self.labels.count(c) for c in label_set]
-        class_weight = [num_samples/float(self.labels.count(c))
-                        for c in label_set]
-        return class_weight, num_class
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
     def __init__(self, args):
-        self.args = args
-
+        pass
     def __call__(self, sample):
         properties, label = sample
 
         # convert np.ndarray to tensor
         properties = torch.from_numpy(properties)
-        # insert depth   
-        properties = properties.float().view(1,self.args.length)
-        # properties = properties.float()
-        # properties = properties.float().view(1, HEIGHT, WIDTH)
+        # insert depth
+        properties = properties.float()#.view(1, WIDTH, HEIGHT)
+
         return properties, label
+
+
 
 # Split data for training and testing randomly
 def randomSplit(csv_file, pos_size, neg_size, pick_rate):

@@ -3,8 +3,8 @@ import torch
 # from FeatureSelectionData import *
 
 from test_final import *
-from CNNnd import *
-from CNNst import *
+# from CNNnd import *
+from DNNst import *
 from torch.autograd import Variable
 from load_data import *
 
@@ -46,7 +46,7 @@ def validate(model, validation, args):
 
     validation_x = [validation_data[i][0] for i in range(len(validation_data))]
     size = len(validation_x)
-    validation_x = Variable(torch.Tensor(validation_x)).reshape(size,1,args.length)
+    validation_x = Variable(torch.Tensor(validation_x)).reshape(size,args.length)
     # print(validation_x.size())
     validation_y = torch.from_numpy(validation_data.labels)
     validation_y = validation_y.long()

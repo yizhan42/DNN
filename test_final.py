@@ -13,8 +13,8 @@ from settings import *
 from sklearn.metrics import roc_curve, auc
 from torch.autograd import Variable
 from analysis import evaluate
-from CNNnd import *
-from CNNst import *
+# from CNNnd import *
+from DNNst import *
 
 def test_final(model, rp, args, saved_model_name):
     # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
@@ -55,7 +55,7 @@ def test_final(model, rp, args, saved_model_name):
         test_x = [test_data[i][0] for i in range(len(test_data))]
         # print(test_x)
         # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
-        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,args.length)
+        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),args.length)
         test_y = torch.from_numpy(test_data.labels).long()
 
         if args.cuda:
@@ -95,8 +95,8 @@ def runAndDraw(model, args):
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Group', 'accuracy', 'mean accuracy', 'mcc', 'sens', 'spec', 'f1'))
-        test_final(model(), rp, args, saved_model_name='best_accuracy')
-        test_final(model(), rp, args, saved_model_name='best_loss')
+        test_final(model(D_in = 4221), rp, args, saved_model_name='best_accuracy')
+        test_final(model(D_in = 4221), rp, args, saved_model_name='best_loss')
         
     result_log_files = []
     for i in range(args.start, args.end):

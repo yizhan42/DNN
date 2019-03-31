@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 
 from load_data import *
 from settings import *
-from CNNnd import *
-from CNNst import *
+# from CNNnd import *
+from DNNst import *
 
 from train import run_main
 from test_final import runAndDraw
@@ -17,11 +17,11 @@ from sklearn.metrics import roc_curve, auc
 from scipy import interp
 
 def main(args):   
-        # model = CNN_multihot
-        # model =  CNN_knnscore  
-        model = globals()[args.model]    
-        run_main(model, args)
-        runAndDraw(model, args)
+    # model = CNN_multihot
+    # model =  CNN_knnscore  
+    model = globals()[args.model]    
+    run_main(model, args)
+    runAndDraw(model, args)
 
 
 if __name__ == '__main__':

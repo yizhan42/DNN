@@ -19,8 +19,8 @@ import torchvision
 from analysis import *
 from analysis import drawLossFigureFromFile
 from analysis import write_and_print as wnp
-from CNNnd import *
-from CNNst import *
+# from CNNnd import *
+from DNNst import *
 from load_data import *
 from settings import *
 from test_final import *
@@ -272,7 +272,7 @@ def run_main(model, args):
         # standard_length=args.length,
         )   
         # model = CNN_multihot()
-        run_train(train_dataset, validation_dataset, model(), args)
+        run_train(train_dataset, validation_dataset, model(D_in = args.length), args)
     args.save_folder = save_folder
 if __name__ == "__main__":
     args = parser.parse_args()
