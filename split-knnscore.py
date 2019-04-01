@@ -41,13 +41,13 @@ def split10fold(data1, data2, file):
 # train 和 test各自分成10份
 def split():
 
-    data1 = readcsv2list('data/knnscore_data/train_all_100.csv')
+    data1 = readcsv2list('data/wdl_data/train/train_all.csv')
     data2 = readcsv2list('data/knnscore_data/test_all_100.csv')
     random.shuffle(data1)
     for i in range(10):
         # train有 3420个，[0,1710)1-1710为正样本，[1710,3419]1711-3420为负样本， test有382个, [0,195]1-196为正样本，[196,382]197-1196为负样本
         # if i < 9:           
-        split10fold(data1[i * 171:i * 171 + 171], data1[1710 + i * 171:1710 + i * 171 + 171], 'data/knnscore_data/train/part_{}'.format(i))
+        split10fold(data1[i * 171:i * 171 + 171], data1[1710 + i * 171:1710 + i * 171 + 171], 'data/wdl_data/train/part_{}'.format(i))
             # split10fold(data2[i * 19:i * 19 + 19], data2[196 + i * 100:196 + i * 100 + 100], 'data/knnscore_data/test/part_{}'.format(i))
         # else:
             # split10fold(data1[i * 171:1710], data1[1710 + i * 171:3420], 'data/knnscore_data/train/part_{}'.format(i))

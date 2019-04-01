@@ -28,7 +28,8 @@ from validate import *
 
 import errno
 
-# from validate import *
+# from torch_model import *
+from wide_deep.data_utils import prepare_data
 
 
 train_loss_list = []
@@ -68,13 +69,31 @@ def train(model,training, validation, args, times=0):
 
     # print("+++")
     # train_data = ProteinDataSet(
-    train_data = ProteinDataset(
-        pd_dataFrame = training,
-        transform = ToTensor(args)
-    )
+    # train_data = ProteinDataset(
+    #     pd_dataFrame = training,
+    #     transform = ToTensor(args)
+    # )
    
 
-    train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
+    # train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
+    wide_cols = [x for x in range(1000,3000)]
+    crossed_cols = ([],[],[],) # 600个
+    embeddings_cols = [(),(),(),()]
+    continuous_cols = [1,2,3]
+    target = 'label'
+    method = 'logistic'
+    # Prepare data
+    wd_dataset = prepare_data(
+        DF, wide_cols,
+        crossed_cols,
+        embeddings_cols,
+        continuous_cols,
+        target,
+        scale=True)
+    train_dataset = wd_dataset['train_dataset']
+    model.fit(dataset=train_dataset, n_epochs=10, batch_size=64)
+
+    
 
     # criterion = torch.nn.MSELoss(size_average=False)
     criterion = torch.nn.NLLLoss(reduction='sum')

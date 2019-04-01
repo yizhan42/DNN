@@ -16,6 +16,8 @@ from analysis import evaluate
 from CNNnd import *
 from CNNst import *
 
+from wide_deep.data_utils import prepare_data
+
 def test_final(model, rp, args, saved_model_name):
     # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
     #     'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
@@ -43,21 +45,40 @@ def test_final(model, rp, args, saved_model_name):
         model.load_state_dict(checkpoint['state_dict'])
        
         print('Loading Testing data from {}'.format(data_path))
-        test_dataset = readTestData(
-            # label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
-            data_path,
-            # index = i,
-            # total=args.groups,
-        )
-        test_data = ProteinDataset(
-            pd_dataFrame=test_dataset,
-        )
-        test_x = [test_data[i][0] for i in range(len(test_data))]
-        # print(test_x)
-        # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
-        test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,args.length)
-        test_y = torch.from_numpy(test_data.labels).long()
-
+        # test_dataset = readTestData(
+        #     # label_data_path='{}{}'.format(args.test_data_folder, args.prefix_filename),
+        #     data_path,
+        #     # index = i,
+        #     # total=args.groups,
+        # )
+        # test_data = ProteinDataset(
+        #     pd_dataFrame=test_dataset,
+        # )
+        # test_x = [test_data[i][0] for i in range(len(test_data))]
+        # # print(test_x)
+        # # test_x = Variable(torch.unsqueeze(torch.Tensor(test_x)))
+        # test_x = Variable(torch.Tensor(test_x)).reshape(len(test_x),1,args.length)
+        # test_y = torch.from_numpy(test_data.labels).long()
+        
+        
+        wide_cols = [x for x in range(1000,3000)]
+        crossed_cols = ([],[],[],) # 600个
+        embeddings_cols = [(),(),(),()]
+        continuous_cols = [1,2,3]
+        target = 'label'
+        method = 'logistic'
+        # Prepare data
+        wd_dataset = prepare_data(
+            DF, wide_cols,
+            crossed_cols,
+            embeddings_cols,
+            continuous_cols,
+            target,
+            scale=True)
+        test_dataset  = wd_dataset['test_dataset']
+        print(model.predict(dataset=test_dataset)[:10])
+        print(model.predict_proba(dataset=test_dataset)[:10])
+        print(model.get_embeddings('education'))
         if args.cuda:
             test_x, test_y = test_x.cuda(), test_y.cuda()
         
