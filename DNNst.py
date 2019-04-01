@@ -35,7 +35,7 @@ class DNNst(torch.nn.Module):
 
 		#H = Variable(H)
 		self.linear2 = torch.nn.Linear(H, I)
-		# self.dropout = nn.Dropout(p=0.5)
+		self.dropout = nn.Dropout(p=0.5)
 		# torch.manual_seed(1)
 		# init.xavier_normal(self.linear2.weight)
 		# print(self.linear2.weight.data)
@@ -84,7 +84,7 @@ class DNNst(torch.nn.Module):
 		#self.linear2_bn = torch.nn.BatchNorm1d(D_out)
 
 		# nn.ReLU()
-		# self.dp = nn.Dropout(p = 0.75)
+		self.dp = nn.Dropout(p = 0.75)
 		self.out = nn.LogSoftmax(dim=1)
 
 	def forward(self, x):
@@ -97,12 +97,12 @@ class DNNst(torch.nn.Module):
 			h_relu = self.linear1(x)
 
 			y_pred = nn.functional.relu(self.linear2(h_relu))
-			# y_pred = self.dropout(y_pred)
+			y_pred = self.dropout(y_pred)
 			# y_pred = nn.functional.relu(self.linear3(y_pred))
 			# y_pred = nn.functional.relu(self.linear4(y_pred))
 			# y_pred = self.dropout(y_pred)
 			y_pred = self.linear3(y_pred)
-			# y_pred = self.dp(y_pred)
+			y_pred = self.dp(y_pred)
 			y_pred = self.out(y_pred)
 			# print(y_pred)
 			return y_pred
