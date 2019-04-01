@@ -17,17 +17,22 @@ class CNN_knnscore(nn.Module):
                 padding=CNN_P[0][4],                  # if want same width and length of this image after con2d, padding=(kernel_size-1)/2 if stride=1
             ),                              # output shape (16, 14, 14)
             nn.ReLU(),                      # activation
+            nn.Dropout(p = 0.25),
             nn.MaxPool1d(kernel_size=CNN_P[0][5]),    # choose max value in 2x2 area, output shape (16, 14, 14)
+            nn.Dropout(p = 0.75)
         )
       
         self.conv2 = nn.Sequential(         # input shape (1, 14, 14)
             nn.Conv1d(CNN_P[1][0], CNN_P[1][1], CNN_P[1][2], CNN_P[1][3], CNN_P[1][4]),     # output shape (32, 7, 7)
             nn.ReLU(),                      # activation
+            nn.Dropout(p = 0.25),
             nn.MaxPool1d(CNN_P[1][5]),                # output shape (32, 7, 7)
+            nn.Dropout(p = 0.75)
         )
         # self.out1 = nn.Linear(RS_Size, Class_N, True)   # fully connected layer, output 2 classes
         self.out1 = nn.Linear(384, 2, True)
         # self.out2 = nn.Softmax()
+        self.dp1 = nn.Dropout(p = 0.5)
         self.out2 = nn.LogSoftmax(dim = 1)
     
     def forward(self, x):
@@ -35,5 +40,6 @@ class CNN_knnscore(nn.Module):
         x = self.conv2(x)
         x = x.view(x.size(0), -1)           # flatten the output of conv2 to (batch_size, 32 * 7 * 7)
         output = self.out1(x)
+        output = self.dp1(output)
         output = self.out2(output)
         return output    # return x for visualization

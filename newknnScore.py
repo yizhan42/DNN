@@ -161,7 +161,7 @@ def sort_protein(ids, feature):
         print('union down')
         result = np.where(union==0, 0.0001, 1-intersection/union)
         print('result down')
-        writer.writerows(np.argsort(result))
+        writer.writerows(np.argsort(result)) # np.sort(result)是每一行值的大小排序，存的结果是值， np.argsort(result)也是按照每一行值的大小排序，存的结果是index
         print('Sort down\n')
 '''
 def sort_protein(ids, feature):

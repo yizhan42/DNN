@@ -159,7 +159,7 @@ def readTestData(label_data_path='./data/multihot_data/test/test_joint_without_i
 
 def dropFirstColumn():
     for i in range(10):
-        with open('data/knnscore_data_0330/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data_0330/train/part_{}.csv'.format(i),'w') as writer:
+        with open('data/knnscore_data/train/part_{}'.format(i),'r') as reader, open('data/knnscore_data/train/part_{}.csv'.format(i),'w') as writer:
             for line in reader:
                 items = line.split(',')
                 # print(','.join(items[1:]), file = writer)
@@ -211,6 +211,6 @@ if __name__ == '__main__':
 
     #     if i == 0:
     #         break;
-    dropFirstColumn()
+    dropFirstColumn1()
     # checkColumnNum()
 
