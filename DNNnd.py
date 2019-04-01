@@ -5,15 +5,15 @@ import torch.utils.data as Data
 import torchvision
 from settings import *
 # import math
-N, D_in, H, I, J, K, D_out = 50, 4221, 1000, 500, 100, 50, 2
+D_in, H, I, D_out = 175, 100, 50, 2
 
-class DNN_multihot(torch.nn.Module):
-	def __init__(self, D_in=D_in, H = H, I = I, J = J, K = K, D_out = D_out):
+class DNN_knnscore(torch.nn.Module):
+	def __init__(self, D_in=D_in, H = H, I = I, D_out = D_out):
 		"""
 		In the constructor we instantiate two nn.Linear modules and assign them as
 		member variables.
 		"""
-		super(DNN_multihot, self).__init__()
+		super(DNN_knnscore, self).__init__()
 
 		#self.input = torch.nn.Dropout(p = 0.75)
 		self.linear1 = torch.nn.Linear(D_in, H)
@@ -44,21 +44,21 @@ class DNN_multihot(torch.nn.Module):
 		# nn.Dropout(p = 0.75)
 
 
-		self.linear3 = torch.nn.Linear(I, J)
+		# self.linear3 = torch.nn.Linear(I, J)
 		# torch.manual_seed(1)
 		# init.xavier_normal(self.linear3.weight)
 		# print(self.linear3.weight.data)
 		# std = math.sqrt(2) / math.sqrt(7.)
 		# self.linear3.weight.data.normal_(0, std)
 
-		self.linear4 = torch.nn.Linear(J, K)
+		# self.linear4 = torch.nn.Linear(J, K)
 		# torch.manual_seed(1)
 		# init.xavier_normal(self.linear4.weight)
 		# print(self.linear4.weight.data)
 		# std = math.sqrt(2) / math.sqrt(7.)
 		# self.linear4.weight.data.normal_(0, std)
 		# self.dropout = nn.Dropout(p=0.25)
-		self.linear3 = torch.nn.Linear(K, D_out)
+		self.linear3 = torch.nn.Linear(I, D_out)
 		# torch.manual_seed(1)
 		# init.xavier_normal(self.linear5.weight)
 		# print(self.linear5.weight.data)
@@ -98,10 +98,10 @@ class DNN_multihot(torch.nn.Module):
 
 			y_pred = nn.functional.relu(self.linear2(h_relu))
 			y_pred = self.dropout(y_pred)
-			y_pred = nn.functional.relu(self.linear3(y_pred))
-			y_pred = nn.functional.relu(self.linear4(y_pred))
+			# y_pred = nn.functional.relu(self.linear3(y_pred))
+			# y_pred = nn.functional.relu(self.linear4(y_pred))
 			# y_pred = self.dropout(y_pred)
-			y_pred = self.linear5(y_pred)
+			y_pred = self.linear3(y_pred)
 			y_pred = self.dp(y_pred)
 			y_pred = self.out(y_pred)
 			# print(y_pred)
