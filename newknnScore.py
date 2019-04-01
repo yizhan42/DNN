@@ -14,9 +14,9 @@ from sklearn.neighbors import NearestNeighbors
 from numpy import genfromtxt
 def combine():
     features = ['SSF', 'SM', 'PS', "PR", "PF", "IPR", 'GO']
-    ffp = [open('data/distance/ID.csv', 'r')] + [open('data/distance/{}_score.csv'.format(feature), 'r') for feature in features[::-1]]
-    with open('data/distance/final.csv', 'w') as wp:
-        for i in range(11906):
+    ffp = [open('data/distance_balanced/ID.csv', 'r')] + [open('data/distance_balanced/{}_score.csv'.format(feature), 'r') for feature in features[::-1]]
+    with open('data/distance_balanced/final.csv', 'w') as wp:
+        for i in range(3812):
             line = ''
             if i % 100 :
                 print(i)
@@ -27,14 +27,14 @@ def combine():
 def filterKnnScore():
     np.set_printoptions(precision=4)
     features = ['SSF', 'SM', 'PS', "PR", "PF", "IPR", 'GO']
-    ids = genfromtxt('data/distance/ID.csv', delimiter=',')
+    ids = genfromtxt('data/distance_balanced/ID.csv', delimiter=',')
     print("load id down")
     for feature in features:
-        X = genfromtxt('data/distance/{}_rank.csv'.format(feature), dtype=int, delimiter=',')
+        X = genfromtxt('data/distance_balanced/{}_rank.csv'.format(feature), dtype=int, delimiter=',')
         total_number = len(X)
         print('load {} {} data down'.format(total_number, feature))
         
-        with open('data/distance/{}_score.csv'.format(feature),'w') as f:
+        with open('data/distance_balanced/{}_score.csv'.format(feature),'w') as f:
             writer = csv.writer(f, delimiter=',')
             for i in range(total_number):
                 protein_id = ids[i][0]
@@ -141,16 +141,17 @@ def splitDataByFeature(FILE):
     fea_breakpoint = {'ID':[0,2], 'GO': [2, 10068], 'IPR': [10068, 19110], 'PF': [19110, 23196], 'PR': [23196, 23897], 'PS': [23897, 25579], 'SM': [25579, 26374], 'SSF': [26374, 27340]}        
     with open(FILE, 'r') as fp:
         for feature in fea_breakpoint.keys():
-            fea_breakpoint[feature].append(csv.writer(open("data/features/{}.csv".format(feature), 'w')))
+            fea_breakpoint[feature].append(csv.writer(open("data/distance_balanced/{}.csv".format(feature), 'w')))
         for line in fp:
-            line = line.split(',')
+            line = line[:-1].split(',')
             for start,end,wp in fea_breakpoint.values():
                 wp.writerow(line[start:end])
 def sort_protein(ids, feature):
     np.set_printoptions(precision=4)
-    X = np.asmatrix(genfromtxt('data/feature/{}.csv'.format(feature), delimiter=','))
-    with open('data/distance/{}_rank.csv'.format(feature),'w') as f:
+    X = np.asmatrix(genfromtxt('data/distance_balanced/{}.csv'.format(feature), delimiter=','))
+    with open('data/distance_balanced/{}_rank.csv'.format(feature),'w') as f, open("data/distance_balanced/{}_distance.csv".format(feature), 'w') as df :
         writer = csv.writer(f)
+        dfwriter = csv.writer(df)
         protein_len = len(X)
         print(feature, protein_len)
         intersection = X*X.T
@@ -159,9 +160,11 @@ def sort_protein(ids, feature):
         print('cot down')
         union = cot+cot.T-intersection
         print('union down')
-        result = np.where(union==0, 0.0001, 1-intersection/union)
+        result = np.where(union==0, 1, 1-intersection/union)
+        dfwriter.writerows(result)
         print('result down')
-        writer.writerows(np.argsort(result)) # np.sort(result)是每一行值的大小排序，存的结果是值， np.argsort(result)也是按照每一行值的大小排序，存的结果是index
+        writer.writerows(np.argsort(result))
+        #writer.writerows(np.sort(result))
         print('Sort down\n')
 '''
 def sort_protein(ids, feature):
@@ -184,7 +187,7 @@ def sort_protein(ids, feature):
 # 求距离矩阵
 def main():        
     fea_breakpoint = {'GO': [2, 10068], 'IPR': [10068, 19110], 'PF': [19110, 23196], 'PR': [23196, 23897], 'PS': [23897, 25579], 'SM': [25579, 26374], 'SSF': [26374, 27340]}
-    fp = open('data/feature/ID.csv', 'r')
+    fp = open('data/distance_balanced/ID.csv', 'r')
     ids = [line[:-1].split(',') for line in fp]
     features = ['SSF', 'SM', 'PS', "PR", "PF", "IPR", 'GO']
     protein_len = len(ids)
@@ -234,6 +237,9 @@ if __name__ == '__main__':
     #main('short_pos_test.csv')
     #main('nofirstline_postest.csv')
     #main()
+#    splitDataByFeature('data/distance_balanced/origin_balanced_data.csv')
+    main()
 #    filterKnnScore()
-    combine()
+#    combine()
+
 
