@@ -21,6 +21,7 @@ from analysis import drawLossFigureFromFile
 from analysis import write_and_print as wnp
 # from CNNnd import *
 from DNNst import *
+from DNNnd import *
 from load_data import *
 from settings import *
 from test_final import *

@@ -106,8 +106,8 @@ experiment.add_argument('--print-interval', type=int, default=1, help='how many 
 
 # common learning options
 learn = parser.add_argument_group('Learning options')
-learn.add_argument('--model', default='CNN_knnscore',
-                   help='Type of model. {} are supported [default: CNN1]')
+learn.add_argument('--model', default='DNN_knnscore',
+                   help='Type of model. {} are supported [default: DNN]')
 learn.add_argument('--num-class', type=int, default=2,help='The number of classes.')
 
 

@@ -5,7 +5,7 @@ import torch.utils.data as Data
 import torchvision
 from settings import *
 # import math
-N, D_in, H, I, J, K, D_out = 50, 4221, 1000, 500, 100, 50, 2
+D_in, H, I, J, K, D_out = 4221, 1000, 500, 100, 50, 2
 
 class DNN_multihot(torch.nn.Module):
 	def __init__(self, D_in=D_in, H = H, I = I, J = J, K = K, D_out = D_out):

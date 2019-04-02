@@ -9,6 +9,7 @@ from load_data import *
 from settings import *
 # from CNNnd import *
 from DNNst import *
+from DNNnd import *
 
 from train import run_main
 from test_final import runAndDraw
