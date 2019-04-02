@@ -255,7 +255,7 @@ def run_main(model, args):
 
     # load model
     # model = loadModule(args)
-    wnp('\n{}'.format(model), log_fp)
+    wnp('\n{}'.format(model()), log_fp)
     log_fp.close()
 
     # Run for each Cross Validation data

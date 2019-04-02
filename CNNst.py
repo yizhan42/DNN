@@ -17,7 +17,7 @@ class CNN_knnscore(nn.Module):
                 padding=CNN_P[0][4],                  # if want same width and length of this image after con2d, padding=(kernel_size-1)/2 if stride=1
             ),                              # output shape (16, 14, 14)
             nn.ReLU(),                      # activation
-            nn.Dropout(p = 0.25),
+            # nn.Dropout(p = 0.25),
             nn.MaxPool1d(kernel_size=CNN_P[0][5]),    # choose max value in 2x2 area, output shape (16, 14, 14)
             nn.Dropout(p = 0.75)
         )
@@ -27,7 +27,7 @@ class CNN_knnscore(nn.Module):
             nn.ReLU(),                      # activation
             nn.Dropout(p = 0.25),
             nn.MaxPool1d(CNN_P[1][5]),                # output shape (32, 7, 7)
-            nn.Dropout(p = 0.75)
+            # nn.Dropout(p = 0.75)
         )
         # self.out1 = nn.Linear(RS_Size, Class_N, True)   # fully connected layer, output 2 classes
         self.out1 = nn.Linear(384, 2, True)
