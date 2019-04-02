@@ -11,7 +11,7 @@ from load_data import *
 # from train import *
 
 
-def validate(model, validation, args):
+def validate(model, validation_data, args):
     if args.continue_from:
         print("=> loading checkpoint from '{}'".format(args.continue_from))
         assert os.path.isfile(args.continue_from), "=> no checkpoint found at '{}'".format(args.continue_from)
@@ -36,38 +36,41 @@ def validate(model, validation, args):
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
 
-    validation_data = ProteinDataset(
-        pd_dataFrame = validation,
-        transform=None
-    )
+    # validation_data = ProteinDataset(
+    #     pd_dataFrame = validation,
+    #     transform=None
+    # )
+    # validation_data = validation['dataset']
     # validation_loader = Data.DataLoader(dataset=validation_data, batch_size=BATCH_SIZE, shuffle=True)
     # b_x = Variable(x)
     # y_score = model(b_x)
 
-    validation_x = [validation_data[i][0] for i in range(len(validation_data))]
-    size = len(validation_x)
-    validation_x = Variable(torch.Tensor(validation_x)).reshape(size,1,args.length)
-    # print(validation_x.size())
-    validation_y = torch.from_numpy(validation_data.labels)
-    validation_y = validation_y.long()
-    validation_y = Variable(validation_y, requires_grad=False)
-
-    criterion = torch.nn.NLLLoss(reduction='sum')
-
+    # validation_x = [validation_data[i][0] for i in range(len(validation_data))]
+    # size = len(validation_x)
+    X_w = Variable(torch.from_numpy(validation_data.wide)).float()
+    X_d = Variable(torch.from_numpy(validation_data.deep))
+    target = Variable(torch.from_numpy(validation_data.labels)).float()
     if args.cuda:
-        validation_x, validation_y = validation_x.cuda(), validation_y.cuda()
+        X_w, X_d, target = X_w.cuda(), X_d.cuda(), target.cuda()
 
-    pred_score = model(validation_x)
+    net = model.eval()
+    pred_score = net(X_w,X_d).cpu()
 
-    # pred_y = torch.max(pred_score, 1)[0]
+    val_loss = model.criterion(pred_score, target)
 
-    val_loss = criterion(pred_score, validation_y)
+    if model.method == "regression":
+        pred_y = pred_score.squeeze(1).data.numpy()
+    if model.method == "logistic":
+        pred_y = (pred_score > 0.5).squeeze(1).data.numpy()
+    if model.method == "multiclass":
+        _, pred_y = torch.max(pred_score, 1)
+    # print(target, pred_score)
 
-    val_accuracy = torch.sum(torch.max(pred_score, 1)[1].data.squeeze() == validation_y.data.long()).cpu().numpy() / float(
-        validation_y.size(0))
+    val_accuracy = torch.sum(torch.max(pred_score, 1)[1].data.squeeze() == target.data.long()).cpu().numpy() / float(
+        target.size(0))
 
     # validation_loss = val_loss.data[0] / validation_y.size(0)
-    validation_loss = val_loss.data / validation_y.size(0)
+    validation_loss = val_loss.data / target.size(0)
 
     return val_accuracy,validation_loss
 

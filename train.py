@@ -37,9 +37,30 @@ val_loss_list = []
 
 train_accuracy_list = []
 val_accuracy_list = []
+DF = pd.read_csv('data/multihot_data/train.csv', header=None)
+wide_cols = [x for x in range(1000,3000)]  
+crossed_cols = ()
+embeddings_cols = [(3,4),(5,7),(7,8)]
+continuous_cols = [8,9]  
+target = 0  
 
-def train(model,training, validation, args, times=0):
-    total_accuracy = 0
+method = 'logistic'
+# Prepare data
+
+hidden_layers = [100,50]
+dropout = [0.5,0.2]
+
+wd_dataset = prepare_data(
+    DF, wide_cols,
+    crossed_cols,
+    embeddings_cols,
+    continuous_cols,
+    target,
+    scale=True)
+
+def train(model, training, validation, args, times=0):
+    model.compile(method=method)
+    # total_accuracy = 0
 
     if args.continue_from:
         print("=> loading checkpoint from '{}'".format(args.continue_from))
@@ -59,7 +80,7 @@ def train(model,training, validation, args, times=0):
         best_loss = None
         best_acc = None
 
-    global sum_train
+    # global sum_train
     # global sum_val
     torch.manual_seed(1)    # reproducible
 
@@ -73,139 +94,101 @@ def train(model,training, validation, args, times=0):
     #     pd_dataFrame = training,
     #     transform = ToTensor(args)
     # )
-   
-
     # train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
-    wide_cols = [x for x in range(1000,3000)]
-    crossed_cols = ([],[],[],) # 600个
-    embeddings_cols = [(),(),(),()]
-    continuous_cols = [1,2,3]
-    target = 'label'
-    method = 'logistic'
-    # Prepare data
-    wd_dataset = prepare_data(
-        DF, wide_cols,
-        crossed_cols,
-        embeddings_cols,
-        continuous_cols,
-        target,
-        scale=True)
-    train_dataset = wd_dataset['train_dataset']
-    model.fit(dataset=train_dataset, n_epochs=10, batch_size=64)
-
-    
-
+    # train_dataset = wd_dataset['dataset']
     # criterion = torch.nn.MSELoss(size_average=False)
-    criterion = torch.nn.NLLLoss(reduction='sum')
+    # criterion = torch.nn.NLLLoss(reduction='sum')
 
-    if args.optimizer == 'Adam':
-        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    elif args.optimizer == 'SGD':
-        optimizer = torch.optim.SGD(
-            model.parameters(), lr=args.lr, momentum=0.9)
-    elif args.optimizer == 'ASGD':
-        optimizer = torch.optim.ASGD(model.parameters(), lr=args.lr)
+    # if args.optimizer == 'Adam':
+    #     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    # elif args.optimizer == 'SGD':
+    #     optimizer = torch.optim.SGD(
+    #         model.parameters(), lr=args.lr, momentum=0.9)
+    # elif args.optimizer == 'ASGD':
+    #     optimizer = torch.optim.ASGD(model.parameters(), lr=args.lr)
+    model.fit(args, training, validation, best_acc, best_loss, n_epochs=10, batch_size=64)
 
-
-# dynamic learning scheme
-    if args.dynamic_lr and args.optimizer != 'Adam':
-        scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, milestones=args.milestones, gamma=args.decay_factor, last_epoch=-1)
-
-    for epoch in range(args.epochs):
-        loss = 0
-        train_accuracy = 0
-        size = 0
-        for batch, (x, y) in enumerate(train_loader):# each batch
-            size += len(y)
-            # put data in GPU
-            if args.cuda:
-                x, y = x.cuda(), y.cuda()
-
-            b_x = Variable(x)  # batch x
-            b_y = Variable(y.long(), requires_grad=False)  # batch y            
-            y_score = model(b_x)
-           
-            train_loss = criterion(y_score, b_y)
-            
-            train_accuracy += sum(torch.max(y_score, 1)[1].data.squeeze() == b_y.data.long()).data.item()
-
-            loss+=train_loss.data.item()
-            
-      # Zero gradients, perform a backward pass, and update the weights.
-            optimizer.zero_grad()
-            train_loss.backward()           
-            optimizer.step()
-           
-        loss /=  size
-        # print("train_accuracy:",train_accuracy)
-        train_accuracy /= size
+    # for epoch in range(args.epochs):
         
-        # each epoch gets a val_accuracy and a validation_loss
-        val_accuracy, validation_loss = validate(model, validation, args)
+    #     loss = 0
+    #     train_accuracy = 0
+    #     size = 0
+    #     for batch, (x, y) in enumerate(train_loader):# each batch
+    #         size += len(y)
+    #         # put data in GPU
+    #         if args.cuda:
+    #             x, y = x.cuda(), y.cuda()
 
-        train_loss_list.append(loss)
-        val_loss_list.append(validation_loss)
+    #         b_x = Variable(x)  # batch x
+    #         b_y = Variable(y.long(), requires_grad=False)  # batch y            
+    #         y_score = model(b_x)
+           
+    #         train_loss = criterion(y_score, b_y)           
+    #         train_accuracy += sum(torch.max(y_score, 1)[1].data.squeeze() == b_y.data.long()).data.item()
+    #         loss+=train_loss.data.item()
+            
+    #   # Zero gradients, perform a backward pass, and update the weights.
+    #         optimizer.zero_grad()
+    #         train_loss.backward()           
+    #         optimizer.step()
+           
+    #     loss /=  size
+    #     # print("train_accuracy:",train_accuracy)
+    #     train_accuracy /= size
+        
+    #     # each epoch gets a val_accuracy and a validation_loss
+    #     val_accuracy, validation_loss = validate(model, validation, args)
 
-        train_accuracy_list.append(train_accuracy)
-        val_accuracy_list.append(val_accuracy)
+    #     train_loss_list.append(loss)
+    #     val_loss_list.append(validation_loss)
+
+    #     train_accuracy_list.append(train_accuracy)
+    #     val_accuracy_list.append(val_accuracy)
        
-        if args.log_result:
-            with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
-                r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
-                    epoch,
-                    batch,
-                    validation_loss,
-                    loss,
-                    val_accuracy,
-                    train_accuracy,
-                    optimizer.state_dict()['param_groups'][0]['lr']
-                ))
+    #     if args.log_result:
+    #         with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
+    #             r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
+    #                 epoch,
+    #                 batch,
+    #                 validation_loss,
+    #                 loss,
+    #                 val_accuracy,
+    #                 train_accuracy,
+    #                 optimizer.state_dict()['param_groups'][0]['lr']
+    #             ))
 
-        if (best_loss is None) or (validation_loss < best_loss):
-            file_path = '{}/best_loss.pth.tar'.format(args.save_folder)
-            print("=> found better validated model, saving to %s" % file_path)
-            save_checkpoint(model,
-                            {'epoch': epoch,
-                             'best_loss': best_loss,
-                             'best_acc': best_acc},
-                            file_path)
+    #     if (best_loss is None) or (validation_loss < best_loss):
+    #         file_path = '{}/best_loss.pth.tar'.format(args.save_folder)
+    #         print("=> found better validated model, saving to %s" % file_path)
+    #         save_checkpoint(model,
+    #                         {'epoch': epoch,
+    #                          'best_loss': best_loss,
+    #                          'best_acc': best_acc},
+    #                         file_path)
 
-            best_loss = validation_loss
+    #         best_loss = validation_loss
 
-        if best_acc is None or val_accuracy > best_acc:
-            file_path = '{}/best_accuracy.pth.tar'.format(args.save_folder)
-            print("=> found better validated model, saving to %s" % file_path)
-            save_checkpoint(model,
-                            {'epoch': epoch,
-                             'best_loss': best_loss,
-                             'best_acc': best_acc},
-                            file_path)
-            best_acc = val_accuracy
+    #     if best_acc is None or val_accuracy > best_acc:
+    #         file_path = '{}/best_accuracy.pth.tar'.format(args.save_folder)
+    #         print("=> found better validated model, saving to %s" % file_path)
+    #         save_checkpoint(model,
+    #                         {'epoch': epoch,
+    #                          'best_loss': best_loss,
+    #                          'best_acc': best_acc},
+    #                         file_path)
+    #         best_acc = val_accuracy
 
-    # # every EPOCH (100 epochs) get a average accuracy
-    # leng = len(val_accuracy_list)
-    # for i in range(args.epochs+1):
-    #     if i == 0:
-    #         pass
-    #     total_accuracy += val_accuracy_list[-i]
 
-    # if epoch == args.epochs-1:
-    #     print(leng)
-    #     average_accuracy = total_accuracy / args.epochs
-    #     lg('Average accuracy is : {:7.6f}'.format(average_accuracy))
-    #     # total_accuracy = 0
-
-    drawLossFigureFromFile(
-        '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
+    # drawLossFigureFromFile(
+    #     '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
 
 
 
-def save_checkpoint(model, state, filename):
-    # model_is_cuda = next(model.parameters()).is_cuda
-    # model = model.module if model_is_cuda else model
-    state['state_dict'] = model.state_dict()
-    torch.save(state,filename)
+# def save_checkpoint(model, state, filename):
+#     # model_is_cuda = next(model.parameters()).is_cuda
+#     # model = model.module if model_is_cuda else model
+#     state['state_dict'] = model.state_dict()
+#     torch.save(state,filename)
 
 
 def run_train(train_dataset, validation_dataset, model, args):
@@ -284,14 +267,35 @@ def run_main(model, args):
         # args.class_weight = class_weight
         print('Loading data from {}/train'.format(args.data_folder))
         
-        train_dataset, validation_dataset = readTrainingData(
-        label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename),
-        index=i,
-        total=args.groups,
-        # standard_length=args.length,
-        )   
+        # train_dataset, validation_dataset = readTrainingData(
+        #     label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename),
+        #     index=i,
+        #     total=args.groups,
+        # # standard_length=args.length,
+        # )   
         # model = CNN_multihot()
-        run_train(train_dataset, validation_dataset, model(), args)
+
+        wide_dim = wd_dataset['dataset'].wide.shape[1]
+        n_unique = len(np.unique(wd_dataset['dataset'].labels))
+        if (method=="regression") or (method=="logistic"):
+            n_class = 1
+        else:
+            n_class = n_unique
+        deep_column_idx = wd_dataset['deep_column_idx']
+        embeddings_input= wd_dataset['embeddings_input']
+        encoding_dict   = wd_dataset['encoding_dict']
+    
+        
+        run_train(wd_dataset['dataset'], wd_dataset['dataset'], model(
+            wide_dim,
+            embeddings_input,
+            continuous_cols,
+            deep_column_idx,
+            hidden_layers,
+            dropout,
+            encoding_dict,
+            n_class
+        ), args)
     args.save_folder = save_folder
 if __name__ == "__main__":
     args = parser.parse_args()

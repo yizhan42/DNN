@@ -9,6 +9,8 @@ from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader
 from wide_deep.data_utils import prepare_data
 import pandas as pd
+import os
+from validate import *
 
 
 use_cuda = torch.cuda.is_available()
@@ -37,44 +39,6 @@ class WideDeepLoader(Dataset):
     def __len__(self):
         return len(self.Y)
 
-
-DF = pd.read_csv('data/multihot_data/multihot_all.csv',header = None)
-DF['income_label'] = (DF["income_bracket"].apply(lambda x: ">50K" in x)).astype(int)
-
-    # Experiment set up
-#     wide_cols = ['age','hours_per_week','education', 'relationship','workclass',
-#                  'occupation','native_country','gender']
-#     crossed_cols = (['education', 'occupation'], ['native_country', 'occupation'])
-#     embeddings_cols = [('education',10), ('relationship',8), ('workclass',10),
-#                         ('occupation',10),('native_country',10)]
-#     continuous_cols = ["age","hours_per_week"]
-wide_cols = [x for x in range(1000,3000)]
-crossed_cols = ([],[],[],) # 600个
-embeddings_cols = [(),(),(),()]
-continuous_cols = [1,2,3]
-target = 'label'
-method = 'logistic'
-# Prepare data
-wd_dataset = prepare_data(
-    DF, wide_cols,
-    crossed_cols,
-    embeddings_cols,
-    continuous_cols,
-    target,
-    scale=True)
-
-# Network set up
-wide_dim = wd_dataset['train_dataset'].wide.shape[1]
-n_unique = len(np.unique(wd_dataset['train_dataset'].labels))
-if (method=="regression") or (method=="logistic"):
-    n_class = 1
-else:
-    n_class = n_unique
-deep_column_idx = wd_dataset['deep_column_idx']
-embeddings_input= wd_dataset['embeddings_input']
-encoding_dict   = wd_dataset['encoding_dict']
-hidden_layers = [100,50]
-dropout = [0.5,0.2]
 
 class WideDeep(nn.Module):
     """ Wide and Deep model. As explained in Heng-Tze Cheng et al., 2016, the
@@ -123,7 +87,7 @@ class WideDeep(nn.Module):
 
         # Build the deep-side hidden layers with dropout if specified
         input_emb_dim = np.sum([emb[2] for emb in self.embeddings_input])
-        self.linear_1 = nn.Linear(input_emb_dim+len(continuous_cols), self.hidden_layers[0])
+        self.linear_1 = nn.Linear(int(input_emb_dim)+len(continuous_cols), self.hidden_layers[0])
         if self.dropout:
             self.linear_1_drop = nn.Dropout(self.dropout[0])
         for i,h in enumerate(self.hidden_layers[1:],1):
@@ -201,7 +165,7 @@ class WideDeep(nn.Module):
         return out
 
 
-    def fit(self, dataset, n_epochs, batch_size):
+    def fit(self, args, training, validation,best_acc, best_loss, n_epochs, batch_size):
         """Run the model for the training set at dataset.
 
         Parameters:
@@ -211,17 +175,19 @@ class WideDeep(nn.Module):
         n_epochs (int)
         batch_size (int)
         """
-        widedeep_dataset = WideDeepLoader(dataset)
-        train_loader = torch.utils.data.DataLoader(dataset=widedeep_dataset,
+        widedeep_training_dataset = WideDeepLoader(training)
+        train_loader = torch.utils.data.DataLoader(dataset=widedeep_training_dataset,
                                                    batch_size=batch_size,
                                                    shuffle=True)
 
         # set the model in training mode
         net = self.train()
         for epoch in range(n_epochs):
-            total=0
-            correct=0
-            for i, (X_wide, X_deep, target) in enumerate(train_loader):
+            total = 0
+            loss = 0
+            train_accuracy = 0
+
+            for batch, (X_wide, X_deep, target) in enumerate(train_loader):
                 X_w = Variable(X_wide)
                 X_d = Variable(X_deep)
                 y = (Variable(target).float() if self.method != 'multiclass' else Variable(target))
@@ -231,8 +197,15 @@ class WideDeep(nn.Module):
 
                 self.optimizer.zero_grad()
                 y_pred =  net(X_w, X_d)
-                loss = self.criterion(y_pred, y)
-                loss.backward()
+
+                # train_loss = criterion(y_score, b_y)           
+                # train_accuracy += sum(torch.max(y_pred, 1)[1].data.squeeze() == y.data.long()).data.item()
+                
+
+                train_loss = self.criterion(y_pred, y)
+                loss+=train_loss.data.item()
+                # train_loss = criterion(y_score, b_y) 
+                train_loss.backward()
                 self.optimizer.step()
 
                 if self.method != "regression":
@@ -241,15 +214,72 @@ class WideDeep(nn.Module):
                         y_pred_cat = (y_pred > 0.5).squeeze(1).float()
                     if self.method == "multiclass":
                         _, y_pred_cat = torch.max(y_pred, 1)
-                    correct+= float((y_pred_cat == y).sum().data[0])
+                    train_accuracy += float((y_pred_cat == y).sum().data[0])
+            loss /=  total
+            # print("train_accuracy:",train_accuracy)
+            train_accuracy /= total
+            # each epoch gets a val_accuracy and a validation_loss
+            val_accuracy, validation_loss = validate(self, validation, args)
 
-            if self.method != "regression":
-                print ('Epoch {} of {}, Loss: {}, accuracy: {}'.format(epoch+1,
-                    n_epochs, np.round(loss.data[0],3), np.round(correct/total,4)))
-            else:
-                print ('Epoch {} of {}, Loss: {}'.format(epoch+1, n_epochs,
-                    round(loss.data[0],3)))
+            # train_loss_list.append(loss)
+            # val_loss_list.append(validation_loss)
 
+            # train_accuracy_list.append(train_accuracy)
+            # val_accuracy_list.append(val_accuracy)
+       
+            if args.log_result:
+                with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
+                    r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
+                        epoch,
+                        batch,
+                        validation_loss,
+                        loss,
+                        val_accuracy,
+                        train_accuracy,
+                        self.optimizer.state_dict()['param_groups'][0]['lr']
+                    ))
+
+            if (best_loss is None) or (validation_loss < best_loss):
+                file_path = '{}/best_loss.pth.tar'.format(args.save_folder)
+                print("=> found better validated model, saving to %s" % file_path)
+                self.save_checkpoint(
+                                {'epoch': epoch,
+                                'best_loss': best_loss,
+                                'best_acc': best_acc},
+                                file_path)
+
+                best_loss = validation_loss
+
+            if best_acc is None or val_accuracy > best_acc:
+                file_path = '{}/best_accuracy.pth.tar'.format(args.save_folder)
+                print("=> found better validated model, saving to %s" % file_path)
+                self.save_checkpoint(
+                                {'epoch': epoch,
+                                'best_loss': best_loss,
+                                'best_acc': best_acc},
+                                file_path)
+                best_acc = val_accuracy
+                # MODEL_DIR = 'model'
+                # if not os.path.exists(MODEL_DIR):
+                #     os.makedirs(MODEL_DIR)
+                # torch.save(model.state_dict(), os.path.join(MODEL_DIR,'logistic.pkl'))
+
+
+        drawLossFigureFromFile(
+            '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
+
+            # if self.method != "regression":
+            #     print ('Epoch {} of {}, train_loss: {}, train_accuracy: {}'.format(epoch+1,
+            #         n_epochs, np.round(loss.data[0],3), np.round(correct/total,4)))
+            # else:
+            #     print ('Epoch {} of {}, train_loss: {}'.format(epoch+1, n_epochs,
+            #         round(train_loss.data[0],3)))
+
+    def save_checkpoint(self, state, filename):
+        # model_is_cuda = next(model.parameters()).is_cuda
+        # model = model.module if model_is_cuda else model
+        state['state_dict'] = self.state_dict()
+        torch.save(state,filename)
 
     def predict(self, dataset):
         """Predict target for dataset.

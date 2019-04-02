@@ -128,16 +128,16 @@ def prepare_data(df, wide_cols, crossed_cols, embeddings_cols, continuous_cols, 
     df_wide = pd.get_dummies(df_wide, columns=dummy_cols)
 
     # train/test split
-    X_train_deep, X_test_deep = train_test_split(df_deep.values, test_size=0.3, random_state=seed)
-    X_train_wide, X_test_wide = train_test_split(df_wide.values, test_size=0.3, random_state=seed)
-    y_train, y_test = train_test_split(Y, test_size=0.3, random_state=1981)
+    # X_train_deep, X_test_deep = train_test_split(df_deep.values, test_size=0.3, random_state=seed)
+    # X_train_wide, X_test_wide = train_test_split(df_wide.values, test_size=0.3, random_state=seed)
+    # y_train, y_test = train_test_split(Y, test_size=0.3, random_state=1981)
 
     # Building the output dictionary
     wd_dataset = dict()
-    train_dataset = namedtuple('train_dataset', 'wide, deep, labels')
-    test_dataset  = namedtuple('test_dataset' , 'wide, deep, labels')
-    wd_dataset['train_dataset'] = train_dataset(X_train_wide, X_train_deep, y_train)
-    wd_dataset['test_dataset']  = test_dataset(X_test_wide, X_test_deep, y_test)
+    tuple_dataset = namedtuple('dataset', 'wide, deep, labels')
+    # test_dataset  = namedtuple('test_dataset' , 'wide, deep, labels')
+    wd_dataset['dataset'] = tuple_dataset(df_wide.values, df_deep.values, Y)
+    # wd_dataset['test_dataset']  = test_dataset(X_test_wide, X_test_deep, y_test)
     wd_dataset['embeddings_input']  = embeddings_input
     wd_dataset['deep_column_idx'] = deep_column_idx
     wd_dataset['encoding_dict'] = encoding_dict
