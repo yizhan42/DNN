@@ -89,7 +89,9 @@ def test_final(model, rp, args, saved_model_name):
     drawMeanRoc(
         targets, predicts, pos_label=1, is_show=False,
         save_file='{}/{}_roc.png'.format(args.save_folder, saved_model_name))
-
+    drawMeanPR(
+        targets, predicts, pos_label=1, is_show=False,
+        save_file='{}/{}_pr.png'.format(args.save_folder, saved_model_name))
 
 def runAndDraw(model, args):  
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
