@@ -31,22 +31,13 @@ import errno
 # from torch_model import *
 from wide_deep.data_utils import prepare_data
 
-
-train_loss_list = []
-val_loss_list = []
-
-train_accuracy_list = []
-val_accuracy_list = []
-DF = pd.read_csv('data/multihot_data/train.csv', header=None)
-wide_cols = [x for x in range(1000,3000)]  
+DF = pd.read_csv('data/wdl_data/train/train.csv', header=None)
+wide_cols = [x for x in range(1000,4000)]  
 crossed_cols = ()
-embeddings_cols = [(3,4),(5,7),(7,8)]
+embeddings_cols = [(3,4),(5,7),(7,8),(2,3)]
 continuous_cols = [8,9]  
 target = 0  
-
 method = 'logistic'
-# Prepare data
-
 hidden_layers = [100,50]
 dropout = [0.5,0.2]
 
@@ -72,125 +63,21 @@ def train(model, training, validation, args, times=0):
         best_acc = checkpoint.get('best_acc', None)
         if start_iter is None:
             start_epoch += 1  # Assume that we saved a model after an epoch finished, so start at the next epoch.
-
         else:
             start_iter += 1
     else:
-
         best_loss = None
         best_acc = None
 
-    # global sum_train
-    # global sum_val
     torch.manual_seed(1)    # reproducible
 
     # put model in GPU
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
-
-    # print("+++")
-    # train_data = ProteinDataSet(
-    # train_data = ProteinDataset(
-    #     pd_dataFrame = training,
-    #     transform = ToTensor(args)
-    # )
-    # train_loader = Data.DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
-    # train_dataset = wd_dataset['dataset']
-    # criterion = torch.nn.MSELoss(size_average=False)
-    # criterion = torch.nn.NLLLoss(reduction='sum')
-
-    # if args.optimizer == 'Adam':
-    #     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    # elif args.optimizer == 'SGD':
-    #     optimizer = torch.optim.SGD(
-    #         model.parameters(), lr=args.lr, momentum=0.9)
-    # elif args.optimizer == 'ASGD':
-    #     optimizer = torch.optim.ASGD(model.parameters(), lr=args.lr)
+   
     model.fit(args, training, validation, best_acc, best_loss, n_epochs=10, batch_size=64)
 
-    # for epoch in range(args.epochs):
-        
-    #     loss = 0
-    #     train_accuracy = 0
-    #     size = 0
-    #     for batch, (x, y) in enumerate(train_loader):# each batch
-    #         size += len(y)
-    #         # put data in GPU
-    #         if args.cuda:
-    #             x, y = x.cuda(), y.cuda()
-
-    #         b_x = Variable(x)  # batch x
-    #         b_y = Variable(y.long(), requires_grad=False)  # batch y            
-    #         y_score = model(b_x)
-           
-    #         train_loss = criterion(y_score, b_y)           
-    #         train_accuracy += sum(torch.max(y_score, 1)[1].data.squeeze() == b_y.data.long()).data.item()
-    #         loss+=train_loss.data.item()
-            
-    #   # Zero gradients, perform a backward pass, and update the weights.
-    #         optimizer.zero_grad()
-    #         train_loss.backward()           
-    #         optimizer.step()
-           
-    #     loss /=  size
-    #     # print("train_accuracy:",train_accuracy)
-    #     train_accuracy /= size
-        
-    #     # each epoch gets a val_accuracy and a validation_loss
-    #     val_accuracy, validation_loss = validate(model, validation, args)
-
-    #     train_loss_list.append(loss)
-    #     val_loss_list.append(validation_loss)
-
-    #     train_accuracy_list.append(train_accuracy)
-    #     val_accuracy_list.append(val_accuracy)
-       
-    #     if args.log_result:
-    #         with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
-    #             r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
-    #                 epoch,
-    #                 batch,
-    #                 validation_loss,
-    #                 loss,
-    #                 val_accuracy,
-    #                 train_accuracy,
-    #                 optimizer.state_dict()['param_groups'][0]['lr']
-    #             ))
-
-    #     if (best_loss is None) or (validation_loss < best_loss):
-    #         file_path = '{}/best_loss.pth.tar'.format(args.save_folder)
-    #         print("=> found better validated model, saving to %s" % file_path)
-    #         save_checkpoint(model,
-    #                         {'epoch': epoch,
-    #                          'best_loss': best_loss,
-    #                          'best_acc': best_acc},
-    #                         file_path)
-
-    #         best_loss = validation_loss
-
-    #     if best_acc is None or val_accuracy > best_acc:
-    #         file_path = '{}/best_accuracy.pth.tar'.format(args.save_folder)
-    #         print("=> found better validated model, saving to %s" % file_path)
-    #         save_checkpoint(model,
-    #                         {'epoch': epoch,
-    #                          'best_loss': best_loss,
-    #                          'best_acc': best_acc},
-    #                         file_path)
-    #         best_acc = val_accuracy
-
-
-    # drawLossFigureFromFile(
-    #     '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
-
-
-
-# def save_checkpoint(model, state, filename):
-#     # model_is_cuda = next(model.parameters()).is_cuda
-#     # model = model.module if model_is_cuda else model
-#     state['state_dict'] = model.state_dict()
-#     torch.save(state,filename)
-
-
+   
 def run_train(train_dataset, validation_dataset, model, args):
     # Create save folder
     try:
@@ -266,14 +153,6 @@ def run_main(model, args):
             args.save_folder = '{}/group_{}'.format(save_folder, i)
         # args.class_weight = class_weight
         print('Loading data from {}/train'.format(args.data_folder))
-        
-        # train_dataset, validation_dataset = readTrainingData(
-        #     label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename),
-        #     index=i,
-        #     total=args.groups,
-        # # standard_length=args.length,
-        # )   
-        # model = CNN_multihot()
 
         wide_dim = wd_dataset['dataset'].wide.shape[1]
         n_unique = len(np.unique(wd_dataset['dataset'].labels))

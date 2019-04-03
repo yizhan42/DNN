@@ -110,7 +110,7 @@ class WideDeep(nn.Module):
         if method == 'regression':
             self.activation, self.criterion = None, F.mse_loss
         if method == 'logistic':
-            self.activation, self.criterion = F.sigmoid, F.binary_cross_entropy
+            self.activation, self.criterion = torch.sigmoid, F.binary_cross_entropy
         if method == 'multiclass':
             self.activation, self.criterion = F.softmax, F.cross_entropy
 
@@ -202,7 +202,7 @@ class WideDeep(nn.Module):
                 # train_accuracy += sum(torch.max(y_pred, 1)[1].data.squeeze() == y.data.long()).data.item()
                 
 
-                train_loss = self.criterion(y_pred, y)
+                train_loss = self.criterion(y_pred, y,reduction='sum')
                 loss+=train_loss.data.item()
                 # train_loss = criterion(y_score, b_y) 
                 train_loss.backward()
@@ -214,7 +214,7 @@ class WideDeep(nn.Module):
                         y_pred_cat = (y_pred > 0.5).squeeze(1).float()
                     if self.method == "multiclass":
                         _, y_pred_cat = torch.max(y_pred, 1)
-                    train_accuracy += float((y_pred_cat == y).sum().data[0])
+                    train_accuracy += float((y_pred_cat == y).sum().item())
             loss /=  total
             # print("train_accuracy:",train_accuracy)
             train_accuracy /= total

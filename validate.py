@@ -36,17 +36,7 @@ def validate(model, validation_data, args):
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
 
-    # validation_data = ProteinDataset(
-    #     pd_dataFrame = validation,
-    #     transform=None
-    # )
-    # validation_data = validation['dataset']
-    # validation_loader = Data.DataLoader(dataset=validation_data, batch_size=BATCH_SIZE, shuffle=True)
-    # b_x = Variable(x)
-    # y_score = model(b_x)
-
-    # validation_x = [validation_data[i][0] for i in range(len(validation_data))]
-    # size = len(validation_x)
+  
     X_w = Variable(torch.from_numpy(validation_data.wide)).float()
     X_d = Variable(torch.from_numpy(validation_data.deep))
     target = Variable(torch.from_numpy(validation_data.labels)).float()
@@ -56,7 +46,7 @@ def validate(model, validation_data, args):
     net = model.eval()
     pred_score = net(X_w,X_d).cpu()
 
-    val_loss = model.criterion(pred_score, target)
+    val_loss = model.criterion(pred_score, target,reduction='sum')
 
     if model.method == "regression":
         pred_y = pred_score.squeeze(1).data.numpy()
@@ -75,14 +65,15 @@ def validate(model, validation_data, args):
     return val_accuracy,validation_loss
 
 if __name__ == "__main__":
-    model = CNN_multihot()
+    # model = CNN_multihot()
     args = parser.parse_args()
-    i = 0
-    train_dataset, validation_dataset = readTrainingData(
-        label_data_path='{}{}'.format(args.train_data_folder, args.prefix_filename),
-        index=i,
-        total=args.groups,
-        # standard_length=args.length,
-    )
+    # i = 0
+    # train_dataset, validation_dataset = readTrainingData(
+    #     label_data_path='{}{}'.format(args.train_data_folder, args.prefix_filename),
+    #     index=i,
+    #     total=args.groups,
+    #     # standard_length=args.length,
+    # )
+    model = WideDeep
     validate(model,validation_dataset, args)
     print("Done")
