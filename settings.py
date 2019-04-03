@@ -1,16 +1,8 @@
 # coding=utf8
-
 import argparse
 import datetime
 
-# Data Parameters
-# TRAIN_CSV_FILE = '../data/train.csv'
-# TEST_CSV_FILE = '../data/test.csv'
-# CSV_FILE = 'data/origin.csv'
 CSV_FILE = 'origin_all_data.csv'
-# NEG_SIZE = 422
-# POS_SIZE = 422
-# PICK_RATE = 0.1
 
 LOGGED = False
 LOGGED = True
@@ -27,8 +19,8 @@ BATCH_SIZE = 100
 LR = 0.001              # learning rate
 
 # IMAGE size
-WIDTH = 14
-HEIGHT = 14
+# WIDTH = 14
+# HEIGHT = 14
 # in_channels , out_channels, kernel_size, stride, padding, Max Pool
 # input height, n_filters   , filter size, filter movement/step
 CNN_P = [[1,16,5,1,2,2], [16,32,5,1,2,7]]

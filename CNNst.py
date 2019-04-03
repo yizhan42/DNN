@@ -4,6 +4,12 @@ from torch.autograd import Variable
 import torch.utils.data as Data
 import torchvision
 from settings import *
+# WIDTH = 14
+# HEIGHT = 14
+# in_channels , out_channels, kernel_size, stride, padding, Max Pool
+# input height, n_filters   , filter size, filter movement/step
+# CNN_P = [[1,16,5,1,2,2], [16,32,5,1,2,7]]
+# RS_Size = 9632 * 1 * 1
 
 class CNN_knnscore(nn.Module):
     def __init__(self):
