@@ -198,10 +198,6 @@ class WideDeep(nn.Module):
                 self.optimizer.zero_grad()
                 y_pred =  net(X_w, X_d)
 
-                # train_loss = criterion(y_score, b_y)           
-                # train_accuracy += sum(torch.max(y_pred, 1)[1].data.squeeze() == y.data.long()).data.item()
-                
-
                 train_loss = self.criterion(y_pred, y,reduction='sum')
                 loss+=train_loss.data.item()
                 # train_loss = criterion(y_score, b_y) 
@@ -221,12 +217,6 @@ class WideDeep(nn.Module):
             # each epoch gets a val_accuracy and a validation_loss
             val_accuracy, validation_loss = validate(self, validation, args)
 
-            # train_loss_list.append(loss)
-            # val_loss_list.append(validation_loss)
-
-            # train_accuracy_list.append(train_accuracy)
-            # val_accuracy_list.append(val_accuracy)
-       
             if args.log_result:
                 with open(os.path.join(args.save_folder, 'result.csv'), 'a') as r:
                     r.write('{:10d} | {:10d} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.7f} | {:10.8f}\n'.format(
@@ -259,21 +249,9 @@ class WideDeep(nn.Module):
                                 'best_acc': best_acc},
                                 file_path)
                 best_acc = val_accuracy
-                # MODEL_DIR = 'model'
-                # if not os.path.exists(MODEL_DIR):
-                #     os.makedirs(MODEL_DIR)
-                # torch.save(model.state_dict(), os.path.join(MODEL_DIR,'logistic.pkl'))
-
-
+               
         drawLossFigureFromFile(
             '{}/result.csv'.format(args.save_folder), is_print=False, is_save=True)
-
-            # if self.method != "regression":
-            #     print ('Epoch {} of {}, train_loss: {}, train_accuracy: {}'.format(epoch+1,
-            #         n_epochs, np.round(loss.data[0],3), np.round(correct/total,4)))
-            # else:
-            #     print ('Epoch {} of {}, train_loss: {}'.format(epoch+1, n_epochs,
-            #         round(train_loss.data[0],3)))
 
     def save_checkpoint(self, state, filename):
         # model_is_cuda = next(model.parameters()).is_cuda

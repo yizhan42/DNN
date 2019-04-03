@@ -31,7 +31,7 @@ import errno
 # from torch_model import *
 from wide_deep.data_utils import prepare_data
 
-DF = pd.read_csv('data/wdl_data/train/train.csv', header=None)
+# DF = pd.read_csv('data/wdl_data/train/train.csv', header=None)
 wide_cols = [x for x in range(1000,4000)]  
 crossed_cols = ()
 embeddings_cols = [(3,4),(5,7),(7,8),(2,3)]
@@ -41,13 +41,13 @@ method = 'logistic'
 hidden_layers = [100,50]
 dropout = [0.5,0.2]
 
-wd_dataset = prepare_data(
-    DF, wide_cols,
-    crossed_cols,
-    embeddings_cols,
-    continuous_cols,
-    target,
-    scale=True)
+# wd_dataset = prepare_data(
+#     DF, wide_cols,
+#     crossed_cols,
+#     embeddings_cols,
+#     continuous_cols,
+#     target,
+#     scale=True)
 
 def train(model, training, validation, args, times=0):
     model.compile(method=method)
@@ -153,19 +153,33 @@ def run_main(model, args):
             args.save_folder = '{}/group_{}'.format(save_folder, i)
         # args.class_weight = class_weight
         print('Loading data from {}/train'.format(args.data_folder))
-
-        wide_dim = wd_dataset['dataset'].wide.shape[1]
-        n_unique = len(np.unique(wd_dataset['dataset'].labels))
+        train_df, validation_df = readTrainingData(label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename), index=i, total=args.groups)
+        train_dataset = prepare_data(
+            train_df, wide_cols,
+            crossed_cols,
+            embeddings_cols,
+            continuous_cols,
+            target,
+            scale=True)
+        validation_dataset = prepare_data(
+            validation_df, wide_cols,
+            crossed_cols,
+            embeddings_cols,
+            continuous_cols,
+            target,
+            scale=True)
+        wide_dim = train_dataset['dataset'].wide.shape[1]
+        n_unique = len(np.unique(train_dataset['dataset'].labels))
         if (method=="regression") or (method=="logistic"):
             n_class = 1
         else:
             n_class = n_unique
-        deep_column_idx = wd_dataset['deep_column_idx']
-        embeddings_input= wd_dataset['embeddings_input']
-        encoding_dict   = wd_dataset['encoding_dict']
+        deep_column_idx = train_dataset['deep_column_idx']
+        embeddings_input= train_dataset['embeddings_input']
+        encoding_dict   = train_dataset['encoding_dict']
     
         
-        run_train(wd_dataset['dataset'], wd_dataset['dataset'], model(
+        run_train(train_dataset['dataset'], validation_dataset['dataset'], model(
             wide_dim,
             embeddings_input,
             continuous_cols,
