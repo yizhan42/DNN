@@ -63,6 +63,8 @@ def test_final(model, rp, args, saved_model_name):
             test_x, test_y = test_x.cuda(), test_y.cuda()
         
         test_output = model(test_x[:])
+        pred = test_output.data[:,1]#一共两列，一列是预测为0的概率，一列是预测为1的概率，画出的ROC的按照y = x对称
+        # print(pred)
         score = test_output.cpu().data.squeeze().numpy()
         # score = torch.max(test_output, 1)[0].data.squeeze()
         preds = torch.max(test_output,1)[1].data.squeeze()
@@ -71,12 +73,13 @@ def test_final(model, rp, args, saved_model_name):
         labels = (test_data.labels,[1-label for label in test_data.labels])
 
         # accuracy, sens, spec, ppv, npv, f1, mcc, acc[neg, pos]
-        evaluations, accuracy = evaluate(test_y, preds)
+        evaluations, accuracy =  evaluate(test_y, preds)
 
         rp.write(' {:^5d} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} \n'.format(
             i, evaluations[0], sum(accuracy)/2, evaluations[6], evaluations[1], evaluations[2], evaluations[5]))
 
-        predicts.append(preds.cpu())
+        # predicts.append(preds.cpu())
+        predicts.append(pred)
         targets.append(test_y.cpu())
         es += evaluations
         accs+= sum(accuracy)/2
@@ -92,14 +95,14 @@ def test_final(model, rp, args, saved_model_name):
         save_file='{}/{}_roc.png'.format(args.save_folder, saved_model_name))
     drawMeanPR(
         targets, predicts, pos_label=1, is_show=False,
-        save_file='{}/{}_roc.png'.format(args.save_folder, saved_model_name))
+        save_file='{}/{}_pr.png'.format(args.save_folder, saved_model_name))
 
 def runAndDraw(model, args):  
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Group', 'accuracy', 'mean accuracy', 'mcc', 'sens', 'spec', 'f1'))
-        test_final(model(D_in = 175), rp, args, saved_model_name='best_accuracy')
-        test_final(model(D_in = 175), rp, args, saved_model_name='best_loss')
+        test_final(model(D_in = 4221), rp, args, saved_model_name='best_accuracy')
+        test_final(model(D_in = 4221), rp, args, saved_model_name='best_loss')
         
     result_log_files = []
     for i in range(args.start, args.end):

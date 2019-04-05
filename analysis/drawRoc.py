@@ -53,7 +53,7 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
     # print(2)
     drawFigureFrame('False Positive Rate (1-Specificity)',
                     'True Positive Rate (Sensitivity)',
-                    'Roc Curse with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
+                    'Roc Curve with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
     
     # print(2)
     for i in range(len(targets)):
@@ -64,11 +64,11 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
         aucs.append(roc_auc)
         plt.plot(fpr, tpr, lw=1, alpha=0.3)
                  #, label='ROC fold %d (AUC=%0.2f)' % (i, roc_auc))
-    print(3)
+    # print(3)
     # Luck Line
     plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
              color='r', label='Luck', alpha=.8)
-    print(4)
+    # print(4)
     # Mean roc
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
