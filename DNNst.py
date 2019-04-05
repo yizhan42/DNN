@@ -85,6 +85,7 @@ class DNN_multihot(torch.nn.Module):
 		# nn.ReLU()
 		self.dp = nn.Dropout(p = 0.75)
 		self.out = nn.LogSoftmax(dim=1)
+		# self.out = nn.Softmax(dim=1)
 
 	def forward(self, x):
 			"""

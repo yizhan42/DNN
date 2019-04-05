@@ -63,7 +63,7 @@ def test_final(model, rp, args, saved_model_name):
             test_x, test_y = test_x.cuda(), test_y.cuda()
         
         test_output = model(test_x[:])
-        pred = test_output.data[:,1]#一共两列，一列是预测为0的概率，一列是预测为1的概率，画出的ROC的按照y = x对称
+        pred = test_output.data[:,1]#一共两列，一列是预测为0的概率，一列是预测为1的概率，画出的ROC的按照y = -x对称
         # print(pred)
         score = test_output.cpu().data.squeeze().numpy()
         # score = torch.max(test_output, 1)[0].data.squeeze()
@@ -101,8 +101,8 @@ def runAndDraw(model, args):
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Group', 'accuracy', 'mean accuracy', 'mcc', 'sens', 'spec', 'f1'))
-        test_final(model(D_in = 4221), rp, args, saved_model_name='best_accuracy')
-        test_final(model(D_in = 4221), rp, args, saved_model_name='best_loss')
+        test_final(model(D_in = 175), rp, args, saved_model_name='best_accuracy')
+        test_final(model(D_in = 175), rp, args, saved_model_name='best_loss')
         
     result_log_files = []
     for i in range(args.start, args.end):
