@@ -157,7 +157,7 @@ def drawLossFigureWhenCrossValidatingInMultFiles(files, save_path, is_print=True
     plt.xlabel('Epoch', fontsize=20)
     plt.ylabel('Acc', fontsize=20)
     # plt.ylim((50, 100))
-    plt.yticks(np.arange(50, 105, 5), fontsize=20)
+    plt.yticks(np.arange(0, 1, 0.01), fontsize=20)
     plt.xticks(np.arange(epoches[0]-1, epoches[-1] +
                          1, len(epoches)/25), fontsize=20)
     # plt.yticks(np.arange(0.0, 1.0, 0.1))

@@ -62,6 +62,7 @@ def test_final(model, rp, args, saved_model_name):
             test_x, test_y = test_x.cuda(), test_y.cuda()
         
         test_output = model(test_x[:])
+        pred = test_output.data[:,1]
         score = test_output.cpu().data.squeeze().numpy()
         # score = torch.max(test_output, 1)[0].data.squeeze()
         preds = torch.max(test_output,1)[1].data.squeeze()
@@ -75,7 +76,7 @@ def test_final(model, rp, args, saved_model_name):
         rp.write(' {:^5d} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} | {:10f} \n'.format(
             i, evaluations[0], sum(accuracy)/2, evaluations[6], evaluations[1], evaluations[2], evaluations[5]))
 
-        predicts.append(preds.cpu())
+        predicts.append(pred.cpu())
         targets.append(test_y.cpu())
         es += evaluations
         accs+= sum(accuracy)/2
