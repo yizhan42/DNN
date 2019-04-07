@@ -53,6 +53,7 @@ def drawMeanPR(targets, predicts, pos_label, is_show=False, save_file=None):
     plt.legend(loc="lower left")
     if save_file != None:
         plt.savefig(save_file, dpi=150)
+        print("Mean PR Figure done!")
     if is_show:
         plt.show()
     plt.close()

@@ -87,6 +87,7 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
     plt.legend(loc="lower right")
     if save_file != None:
         plt.savefig(save_file, dpi=150)
+        print("Mean ROC Figure done!")
     if is_show:
         plt.show()
     plt.close()
