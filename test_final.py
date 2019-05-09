@@ -72,12 +72,10 @@ def test_final(model, rp, args, saved_model_name, test_data):
         test_output = net(X_w,X_d)
         score = test_output.cpu()
         # score = test_output.cpu().data.squeeze().numpy()      
-        # preds = torch.max(test_output,1)[1].data.squeeze()  
-        preds = (test_output > 0.5).squeeze(1).data.squeeze()  
-        # print(preds)
-        # print(target)   
+        preds = (test_output > 0.5).squeeze(1).data.squeeze()       
         # labels = (test_data.labels,[1-label for label in test_data.labels])
-        
+        # print(preds)
+        # print(target)
         if model.method == "regression":
             pred_y = score.squeeze(1).data.numpy()
         if model.method == "logistic":

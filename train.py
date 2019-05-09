@@ -76,8 +76,8 @@ def train(model, training, validation, args, times=0):
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
    
-    # model.fit(args, training, validation, best_acc, best_loss, n_epochs=10, batch_size=64)
     model.fit(args, training, validation, best_acc, best_loss, n_epochs=args.epochs, batch_size=64)
+
    
 def run_train(train_dataset, validation_dataset, model, args):
     # Create save folder
@@ -155,7 +155,7 @@ def run_main(model, args):
         # args.class_weight = class_weight
         print('Loading data from {}/train'.format(args.data_folder))
         train_df, validation_df = readTrainingData(label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename), index=i, total=args.groups)
-        print(train_df, type(train_df[0][0]), validation_df,type(validation_df[0]))
+        # print(train_df, type(train_df[0][0]), validation_df,type(validation_df[0]))
         # print(type(train_df[0][0]))
         train_dataset = prepare_data(
             train_df, wide_cols,

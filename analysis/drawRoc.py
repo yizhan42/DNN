@@ -45,17 +45,17 @@ def drawSingleRoc(target, predict, pos_label=1, is_show=False, save_file=None):
 
 
 def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
-    print("targets:",targets)
-    print("predicts:", predicts)
+    #print("targets:",targets)
+    #print("predicts:", predicts)
     tprs = []
     aucs = []
     mean_fpr = np.linspace(0, 1, 100)
-    print(2)
+    #print(2)
     drawFigureFrame('False Positive Rate (1-Specificity)',
                     'True Positive Rate (Sensitivity)',
                     'Roc Curve with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
     
-    print(2)
+    #print(2)
     for i in range(len(targets)):
         # Compute ROC curve and area the curve
         fpr, tpr, roc_auc = calRocAuc(targets[i], predicts[i], pos_label)        
@@ -64,11 +64,11 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
         aucs.append(roc_auc)
         plt.plot(fpr, tpr, lw=1, alpha=0.3)
                  #, label='ROC fold %d (AUC=%0.2f)' % (i, roc_auc))
-    print(3)
+    #print(3)
     # Luck Line
     plt.plot([0, 1], [0, 1], linestyle='--', lw=2,
              color='r', label='Luck', alpha=.8)
-    print(4)
+    #print(4)
     # Mean roc
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
@@ -77,7 +77,7 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
     plt.plot(mean_fpr, mean_tpr, color='b',
              label=r'Mean ROC (AUC = %0.2f $\pm$ %0.2f)' % (mean_auc, std_auc),
              lw=2, alpha=.8)
-    print(5)
+    #print(5)
     # Standard area
     std_tpr = np.std(tprs, axis=0)
     tprs_upper = np.minimum(mean_tpr + std_tpr, 1)
