@@ -131,11 +131,11 @@ def readTrainingData(label_data_path='./data/multihot_data/train/part', index=0,
             reader = csv.reader(read_file)
             if i == index:
                 for item in reader:
-                    validation_data.append(item)
+                    validation_data.append([float(x) for x in item])
                     # validation_label.append(int(label))
             else:
                 for item in reader:
-                    train_data.append(item)
+                    train_data.append([float(x) for x in item])
                     # train_label.append(int(label))
     train_data = pd.DataFrame(data=train_data)
     validation_data = pd.DataFrame(data=validation_data)
@@ -149,7 +149,7 @@ def readTestData(label_data_path='./data/multihot_data/test/test_joint_without_i
     with open(label_data_path) as read_file:
         reader = csv.reader(read_file)            
         for item in reader:
-            test_data.append(item)
+            test_data.append([float(x) for x in item])
 
     test_data = pd.DataFrame(data = test_data)
     # test_small_data = pd.DataFrame(data = test_small_data)

@@ -12,6 +12,8 @@ def evaluate(target, predict):
         predict = predict.cpu()
     except Exception as e:
         print(e)
+    #target = np.c_[1-target, target]
+    #print(target)
     cm = confusion_matrix(target, predict).ravel()
     # print(cm)
     # tn, fp, fn, tp = cm

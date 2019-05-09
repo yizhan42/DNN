@@ -21,7 +21,7 @@ from wide_deep.data_utils import prepare_data
 
 
 DF = pd.read_csv('data/wdl_data/test/test_joint_without_id.csv', header=None)
-wide_cols = [x for x in range(1000,4000)]  
+wide_cols = [x for x in range(1,4221)]  
 crossed_cols = ()
 embeddings_cols = [(3,4),(5,7),(7,8),(2,3)]
 continuous_cols = [8,9]  
@@ -72,9 +72,10 @@ def test_final(model, rp, args, saved_model_name, test_data):
         test_output = net(X_w,X_d)
         score = test_output.cpu()
         # score = test_output.cpu().data.squeeze().numpy()      
-        preds = torch.max(test_output,1)[1].data.squeeze()       
+        preds = (test_output > 0.5).squeeze(1).data.squeeze()       
         # labels = (test_data.labels,[1-label for label in test_data.labels])
-        
+        # print(preds)
+        # print(target)
         if model.method == "regression":
             pred_y = score.squeeze(1).data.numpy()
         if model.method == "logistic":
@@ -105,7 +106,7 @@ def test_final(model, rp, args, saved_model_name, test_data):
 
     drawMeanPR(
         targets, predicts, pos_label=1, is_show=False,
-        save_file='{}/{}_pr_fragments.png'.format(args.model_path, saved_model_name))
+        save_file='{}/{}_pr.png'.format(args.save_folder, saved_model_name))
 
 
 def runAndDraw(model, args):  
