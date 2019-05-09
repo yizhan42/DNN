@@ -21,7 +21,7 @@ from wide_deep.data_utils import prepare_data
 
 
 DF = pd.read_csv('data/wdl_data/test/test_joint_without_id.csv', header=None)
-wide_cols = [x for x in range(1000,4000)]  
+wide_cols = [x for x in range(1,4221)]  
 crossed_cols = ()
 embeddings_cols = [(3,4),(5,7),(7,8),(2,3)]
 continuous_cols = [8,9]  
@@ -41,7 +41,7 @@ test_data = wd_dataset['dataset']
 
 def test_final(model, rp, args, saved_model_name, test_data):
     model.compile(method=method)
-    
+
     targets, predicts, es, accs = [], [], np.zeros(7), 0
     # using GPU
     if args.cuda:
@@ -72,7 +72,10 @@ def test_final(model, rp, args, saved_model_name, test_data):
         test_output = net(X_w,X_d)
         score = test_output.cpu()
         # score = test_output.cpu().data.squeeze().numpy()      
-        preds = torch.max(test_output,1)[1].data.squeeze()       
+        # preds = torch.max(test_output,1)[1].data.squeeze()  
+        preds = (test_output > 0.5).squeeze(1).data.squeeze()  
+        # print(preds)
+        # print(target)   
         # labels = (test_data.labels,[1-label for label in test_data.labels])
         
         if model.method == "regression":
@@ -105,7 +108,8 @@ def test_final(model, rp, args, saved_model_name, test_data):
 
     drawMeanPR(
         targets, predicts, pos_label=1, is_show=False,
-        save_file='{}/{}_pr_fragments.png'.format(args.model_path, saved_model_name))
+        # save_file='{}/{}_pr_fragments.png'.format(args.model_path, saved_model_name))
+        save_file='{}/{}_pr.png'.format(args.save_folder, saved_model_name))
 
 
 def runAndDraw(model, args):  

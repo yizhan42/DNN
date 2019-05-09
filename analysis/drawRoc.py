@@ -32,7 +32,7 @@ def drawSingleRoc(target, predict, pos_label=1, is_show=False, save_file=None):
     fpr, tpr, auc = calRocAuc(target, predict, pos_label)
     drawFigureFrame('False Positive Rate (1-Specificity)',
                     'True Positive Rate (Sensitivity)',
-                    'Roc Curse with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
+                    'Roc Curve with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
     drawLine(fpr, tpr, label='ROC (AUC={:.2f})'.format(
         auc), color='orange', lineWeight=2)
     plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--', label="lucky")
@@ -53,7 +53,7 @@ def drawMeanRoc(targets, predicts, pos_label, is_show=False, save_file=None):
     print(2)
     drawFigureFrame('False Positive Rate (1-Specificity)',
                     'True Positive Rate (Sensitivity)',
-                    'Roc Curse with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
+                    'Roc Curve with Auc', xlim=[-0.05, 1.05], ylim=[-0.05, 1.05])
     
     print(2)
     for i in range(len(targets)):

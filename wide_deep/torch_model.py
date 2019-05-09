@@ -13,7 +13,8 @@ import os
 from validate import *
 
 
-use_cuda = torch.cuda.is_available()
+# use_cuda = torch.cuda.is_available()
+use_cuda = False#torch.cuda.is_available()
 
 class WideDeepLoader(Dataset):
     """Helper to facilitate loading the data to the pytorch models.

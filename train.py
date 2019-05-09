@@ -32,10 +32,10 @@ import errno
 from wide_deep.data_utils import prepare_data
 
 # DF = pd.read_csv('data/wdl_data/train/train.csv', header=None)
-wide_cols = [x for x in range(1000,4000)]  
+wide_cols = [x for x in range(1,4221)]  
 crossed_cols = ()
-embeddings_cols = [(3,4),(5,7),(7,8),(2,3)]
-continuous_cols = [8,9]  
+embeddings_cols = [(2,3),(3,4),(4,5)]
+continuous_cols = [8, 9] 
 target = 0  
 method = 'logistic'
 hidden_layers = [100,50]
@@ -50,7 +50,8 @@ dropout = [0.5,0.2]
 #     scale=True)
 
 def train(model, training, validation, args, times=0):
-    model.compile(method=method)
+    # model.compile(method=method)
+    model.compile(method=method, learning_rate = args.lr)
     # total_accuracy = 0
 
     if args.continue_from:
@@ -75,8 +76,8 @@ def train(model, training, validation, args, times=0):
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()
    
-    model.fit(args, training, validation, best_acc, best_loss, n_epochs=10, batch_size=64)
-
+    # model.fit(args, training, validation, best_acc, best_loss, n_epochs=10, batch_size=64)
+    model.fit(args, training, validation, best_acc, best_loss, n_epochs=args.epochs, batch_size=64)
    
 def run_train(train_dataset, validation_dataset, model, args):
     # Create save folder
@@ -154,6 +155,8 @@ def run_main(model, args):
         # args.class_weight = class_weight
         print('Loading data from {}/train'.format(args.data_folder))
         train_df, validation_df = readTrainingData(label_data_path='{}/train/{}'.format(args.data_folder, args.prefix_filename), index=i, total=args.groups)
+        print(train_df, type(train_df[0][0]), validation_df,type(validation_df[0]))
+        # print(type(train_df[0][0]))
         train_dataset = prepare_data(
             train_df, wide_cols,
             crossed_cols,
@@ -193,7 +196,9 @@ def run_main(model, args):
 if __name__ == "__main__":
     args = parser.parse_args()
     model = globals()[args.model] 
-    run_main(model,args) # CNN_multihot是个类，CNN_multihot()是个对象，但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
+    run_main(model,args) 
+    # CNN_multihot是个类，CNN_multihot()是个对象，
+    # 但是为了在十折交叉验证中每个折里面都新定义一个对象，所以此处用类，而在run函数中的每一折中定义一个对象
 
 
 # run_main是 main 函数，run_main 中跑 run_train， run_train 中调用train函数
