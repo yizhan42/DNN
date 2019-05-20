@@ -20,6 +20,7 @@ def test_final(model, rp, args, saved_model_name):
     # rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
     #     'Mean', 'accuracy', 'accs', 'mcc', 'sens', 'spec', 'f1'))
     targets, predicts, es, accs = [], [], np.zeros(7), 0
+    model.out2 = nn.Softmax(dim=1)
     # using GPU
     if args.cuda:
         model = torch.nn.DataParallel(model).cuda()

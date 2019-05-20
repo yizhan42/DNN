@@ -49,3 +49,6 @@ class CNN_knnscore(nn.Module):
         output = self.dp1(output)
         output = self.out2(output)
         return output    # return x for visualization
+
+# model = CNN_knnscore()
+# model.out2 = nn.Softmax(dim=1)
