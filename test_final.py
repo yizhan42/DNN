@@ -101,8 +101,8 @@ def runAndDraw(model, args):
     with open('{}/analysis.csv'.format(args.save_folder), 'w') as rp:
         rp.write(' {:^5s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} | {:10s} \n'.format(
         'Group', 'accuracy', 'mean accuracy', 'mcc', 'sens', 'spec', 'f1'))
-        test_final(model(D_in = 4221), rp, args, saved_model_name='best_accuracy')
-        test_final(model(D_in = 4221), rp, args, saved_model_name='best_loss')
+        test_final(model(D_in = 175), rp, args, saved_model_name='best_accuracy')
+        test_final(model(D_in = 175), rp, args, saved_model_name='best_loss')
         
     result_log_files = []
     for i in range(args.start, args.end):
